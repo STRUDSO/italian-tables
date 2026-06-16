@@ -112,7 +112,7 @@
 
 <header>
   <h1>Italiensk 🇮🇹 – Token lineage <span class="da" style="font-size:1rem;color:#8a8170">(Prototype B)</span></h1>
-  <p>Byg en sætning foroven. Hold musen over (eller tap) hvert <em>ord</em> for at se præcis hvilken tabel, række og celle det kommer fra.</p>
+  <p>Byg en sætning foroven. <em>Klik</em> på et ord for at se præcis hvilken tabel, række og celle det kommer fra.</p>
 </header>
 
 <!-- ============ SÆTNINGSBYGGER (TOP) ============ -->
@@ -144,7 +144,7 @@
       <span><i style="background:var(--blue)"></i> artikel + navneord</span>
       <span><i style="background:var(--amber)"></i> tillægsord</span>
     </div>
-    <p class="hint">↓ Tabellerne nedenfor lyser op og scroller automatisk til det felt et ord stammer fra, når du peger på ordet.</p>
+    <p class="hint">↓ Klik på et ord, så lyser tabellerne nedenfor op og scroller til det felt ordet stammer fra.</p>
   </div>
 </div>
 
@@ -341,13 +341,13 @@ function clearHl(){
 
 /* highlight a target element in the full tables + smooth-scroll into view */
 let scrollTimer=null;
-function traceInTables(target){
+function traceInTables(target, scroll=true){
   clearHl();
   if(!target) return;
   if(target.cell) target.cell.classList.add("hl");
   if(target.row) target.row.classList.add("hl-row");
   const focus = target.cell || target.row;
-  if(focus){
+  if(focus && scroll){
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(()=> focus.scrollIntoView({behavior:"smooth", block:"center"}), 40);
   }
@@ -520,14 +520,15 @@ function render(){
       el.classList.remove("active");
     }
 
-    el.addEventListener("mouseenter", show);
-    el.addEventListener("mouseleave", hide);
-    el.addEventListener("focus", show);
-    el.addEventListener("blur", hide);
-    // tap toggle for touch
+    // click toggles the source card + table trace (no hover, so the page only
+    // scrolls when you deliberately click a word)
     el.addEventListener("click", (e)=>{
       e.stopPropagation();
       if(card.classList.contains("show")) hide(); else show();
+    });
+    el.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter" || e.key===" "){ e.preventDefault();
+        if(card.classList.contains("show")) hide(); else show(); }
     });
 
     box.appendChild(wrap);
@@ -541,8 +542,8 @@ function render(){
     }
   });
 
-  // default: highlight verb cell so tables aren't empty on load
-  traceInTables({cell: $(`v-${s.p}-${v.g}`), row: $(`v-${s.p}-${v.g}`) ? $(`v-${s.p}-${v.g}`).parentElement : null});
+  // default: highlight verb cell so tables aren't empty (no scroll on dropdown change)
+  traceInTables({cell: $(`v-${s.p}-${v.g}`), row: $(`v-${s.p}-${v.g}`) ? $(`v-${s.p}-${v.g}`).parentElement : null}, false);
 }
 
 /* returns the three article cells (ubestemt / bestemt ental / flertal) text for a noun's row */
