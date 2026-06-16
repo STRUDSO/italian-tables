@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype B — Token lineage</title>
+<style>
+  :root{
+    --bg:#faf7f0; --ink:#2b2b2b; --line:#d8cfbc;
+    --green:#2e7d4f; --green-bg:#e7f3ea;
+    --blue:#2b5d8a; --blue-bg:#e6eef6;
+    --red:#b5443a; --red-bg:#f7e7e5;
+    --amber:#9a6b1e; --amber-bg:#f6eed9;
+    --purple:#7a5cc0; --purple-bg:#ede8f9;
+    --hl:#ffe9a8; --hl-edge:#e6a700;
+    --shadow:0 2px 10px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1240px; margin:0 auto; padding:24px 18px 80px}
+  header h1{margin:0 0 4px; font-size:2rem; letter-spacing:-.5px}
+  header p{margin:0; color:#6b6354}
+  h2{margin:42px 0 6px; font-size:1.4rem; border-bottom:2px solid var(--line); padding-bottom:6px}
+  h2 .da{color:#8a8170; font-weight:400; font-size:1rem}
+  .lead{color:#5c5547; max-width:70ch}
+  table{border-collapse:collapse; width:100%; background:#fff; box-shadow:var(--shadow); border-radius:10px; overflow:hidden; margin:16px 0}
+  caption{caption-side:top; text-align:left; font-weight:600; padding:0 0 8px; color:#6b6354}
+  th,td{border:1px solid var(--line); padding:9px 11px; text-align:left; font-size:.96rem; transition:background .25s, box-shadow .25s}
+  thead th{background:#f1ebdd}
+  tbody th{background:#f7f3ea; font-weight:600; white-space:nowrap}
+  .da-cell{color:#9a927f; font-size:.82rem; display:block}
+  .end{font-weight:700; font-variant:small-caps}
+  .are{color:var(--green)} .ere{color:var(--blue)} .ire{color:var(--red)}
+  .ex{font-style:italic; color:#444}
+  .fem{background:var(--red-bg)} .masc{background:var(--blue-bg)} .masc2{background:var(--amber-bg)}
+  .tag{display:inline-block; font-size:.72rem; padding:1px 7px; border-radius:20px; vertical-align:middle; margin-left:6px}
+  .tag.f{background:var(--red-bg); color:var(--red)}
+  .tag.m{background:var(--blue-bg); color:var(--blue)}
+  .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:14px 0; box-shadow:var(--shadow)}
+
+  /* ---- highlight from builder ---- */
+  .hl{ background:var(--hl) !important; box-shadow:inset 0 0 0 2px var(--hl-edge); position:relative; }
+  .hl-row > th, .hl-row > td{ background:#fff7e0; }
+
+  /* ---- builder (top, sticky) ---- */
+  .builder{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px 20px; margin:10px 0 6px;
+    position:sticky; top:0; z-index:30;
+  }
+  .row{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end}
+  .field{display:flex; flex-direction:column; gap:4px; flex:1 1 160px; min-width:150px}
+  .field label{font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; color:#8a8170}
+  .field label .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle}
+  .dot-p{background:var(--purple)} .dot-v{background:var(--green)} .dot-n{background:var(--blue)} .dot-a{background:var(--amber)}
+  select{font-size:1rem; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:#faf7f0; width:100%}
+
+  /* ---- token sentence ---- */
+  .sentence-box{margin-top:18px; padding:20px 18px 16px; background:#fcfaf4; border-radius:10px; border:1px solid var(--line)}
+  .tokens{display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start}
+  .token-wrap{position:relative; display:inline-flex; flex-direction:column; align-items:center}
+  .token{
+    font-size:1.5rem; font-weight:700; padding:6px 14px; border-radius:10px;
+    cursor:pointer; border:2px solid transparent; transition:transform .12s, box-shadow .12s, border-color .12s;
+    user-select:none; white-space:nowrap;
+  }
+  .token:hover, .token.active{transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.12)}
+  .token .tk-da{display:block; font-size:.7rem; font-weight:500; opacity:.7; text-align:center; margin-top:1px}
+  .tk-p{background:var(--purple-bg); color:var(--purple)}
+  .tk-v{background:var(--green-bg); color:var(--green)}
+  .tk-n{background:var(--blue-bg); color:var(--blue)}
+  .tk-a{background:var(--amber-bg); color:var(--amber)}
+  .tk-p.active{border-color:var(--purple)} .tk-v.active{border-color:var(--green)}
+  .tk-n.active{border-color:var(--blue)} .tk-a.active{border-color:var(--amber)}
+  .punct{font-size:1.5rem; font-weight:700; align-self:center; color:#8a8170}
+
+  /* ---- source card (popover under token) ---- */
+  .source-card{
+    position:absolute; top:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(-4px);
+    background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,.18);
+    padding:12px 14px; z-index:40; min-width:230px; opacity:0; pointer-events:none; transition:opacity .15s, transform .15s;
+  }
+  .source-card.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto}
+  .source-card::before{
+    content:""; position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
+    border:7px solid transparent; border-bottom-color:#fff; filter:drop-shadow(0 -1px 0 var(--line));
+  }
+  .sc-head{font-size:.74rem; text-transform:uppercase; letter-spacing:.5px; color:#8a8170; margin-bottom:7px; font-weight:600}
+  .sc-head .swatch{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle}
+  .mini{border-collapse:collapse; margin:0; box-shadow:none; border-radius:6px; overflow:hidden; width:100%}
+  .mini th, .mini td{border:1px solid var(--line); padding:5px 8px; font-size:.82rem; text-align:center; white-space:nowrap; background:#fff; transition:none}
+  .mini th{background:#f4eedf; font-weight:600; color:#6b6354; font-size:.74rem}
+  .mini td.cell-hot{background:var(--hl); box-shadow:inset 0 0 0 2px var(--hl-edge); font-weight:700; color:var(--ink)}
+  .sc-note{font-size:.76rem; color:#7a7263; margin-top:8px; line-height:1.35}
+  .sc-note b{color:var(--ink)}
+
+  .hint{color:#9a927f; font-size:.82rem; margin:12px 2px 0}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:6px; font-size:.78rem; color:#6b6354}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .legend i{width:12px; height:12px; border-radius:4px; display:inline-block}
+
+  footer{margin-top:50px; color:#9a927f; font-size:.82rem; text-align:center}
+  @media(max-width:640px){ header h1{font-size:1.5rem} .builder{position:static} .token{font-size:1.25rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Italiensk 🇮🇹 – Token lineage <span class="da" style="font-size:1rem;color:#8a8170">(Prototype B)</span></h1>
+  <p>Byg en sætning foroven. Hold musen over (eller tap) hvert <em>ord</em> for at se præcis hvilken tabel, række og celle det kommer fra.</p>
+</header>
+
+<!-- ============ SÆTNINGSBYGGER (TOP) ============ -->
+<div class="builder">
+  <div class="row">
+    <div class="field">
+      <label><span class="dot dot-p"></span>Person</label>
+      <select id="subject"></select>
+    </div>
+    <div class="field">
+      <label><span class="dot dot-v"></span>Udsagnsord</label>
+      <select id="verb"></select>
+    </div>
+    <div class="field">
+      <label><span class="dot dot-n"></span>Navneord</label>
+      <select id="noun"></select>
+    </div>
+    <div class="field">
+      <label><span class="dot dot-a"></span>Tillægsord</label>
+      <select id="adj"></select>
+    </div>
+  </div>
+
+  <div class="sentence-box">
+    <div class="tokens" id="tokens"></div>
+    <div class="legend">
+      <span><i style="background:var(--purple)"></i> person</span>
+      <span><i style="background:var(--green)"></i> udsagnsord</span>
+      <span><i style="background:var(--blue)"></i> artikel + navneord</span>
+      <span><i style="background:var(--amber)"></i> tillægsord</span>
+    </div>
+    <p class="hint">↓ Tabellerne nedenfor lyser op og scroller automatisk til det felt et ord stammer fra, når du peger på ordet.</p>
+  </div>
+</div>
+
+<!-- ============ TABEL 1: UDSAGNSORD ============ -->
+<h2>Tabel 1 · Udsagnsord <span class="da">– bøjning i nutid (presente)</span></h2>
+<table>
+  <caption>Regelmæssig nutid · endelser og eksempler</caption>
+  <thead>
+    <tr>
+      <th>Person</th>
+      <th>Pronomen</th>
+      <th class="are">-are <span class="da">(parlare = tale)</span></th>
+      <th class="ere">-ere <span class="da">(prendere = tage)</span></th>
+      <th class="ire">-ire <span class="da">(dormire = sove)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th>jeg</th><td>io</td>
+      <td id="v-0-are"><span class="end are">-o</span> · <span class="ex">parlo</span></td>
+      <td id="v-0-ere"><span class="end ere">-o</span> · <span class="ex">prendo</span></td>
+      <td id="v-0-ire"><span class="end ire">-o</span> · <span class="ex">dormo</span></td></tr>
+    <tr><th>du</th><td>tu</td>
+      <td id="v-1-are"><span class="end are">-i</span> · <span class="ex">parli</span></td>
+      <td id="v-1-ere"><span class="end ere">-i</span> · <span class="ex">prendi</span></td>
+      <td id="v-1-ire"><span class="end ire">-i</span> · <span class="ex">dormi</span></td></tr>
+    <tr><th>han / hun / De</th><td>lui / lei / Lei</td>
+      <td id="v-2-are"><span class="end are">-a</span> · <span class="ex">parla</span></td>
+      <td id="v-2-ere"><span class="end ere">-e</span> · <span class="ex">prende</span></td>
+      <td id="v-2-ire"><span class="end ire">-e</span> · <span class="ex">dorme</span></td></tr>
+    <tr><th>vi</th><td>noi</td>
+      <td id="v-3-are"><span class="end are">-iamo</span> · <span class="ex">parliamo</span></td>
+      <td id="v-3-ere"><span class="end ere">-iamo</span> · <span class="ex">prendiamo</span></td>
+      <td id="v-3-ire"><span class="end ire">-iamo</span> · <span class="ex">dormiamo</span></td></tr>
+    <tr><th>I</th><td>voi</td>
+      <td id="v-4-are"><span class="end are">-ate</span> · <span class="ex">parlate</span></td>
+      <td id="v-4-ere"><span class="end ere">-ete</span> · <span class="ex">prendete</span></td>
+      <td id="v-4-ire"><span class="end ire">-ite</span> · <span class="ex">dormite</span></td></tr>
+    <tr><th>de</th><td>loro</td>
+      <td id="v-5-are"><span class="end are">-ano</span> · <span class="ex">parlano</span></td>
+      <td id="v-5-ere"><span class="end ere">-ono</span> · <span class="ex">prendono</span></td>
+      <td id="v-5-ire"><span class="end ire">-ono</span> · <span class="ex">dormono</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ============ TABEL 2: NAVNEORD + ARTIKLER ============ -->
+<h2>Tabel 2 · Navneord & artikler <span class="da">– køn, ubestemt/bestemt, ental/flertal</span></h2>
+<table id="noun-table">
+  <caption>Mønstre for artikler</caption>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Ubestemt <span class="da">(en/et)</span></th>
+      <th>Bestemt ental <span class="da">(-en/-et)</span></th>
+      <th>Flertal <span class="da">(bestemt)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="fem" data-g="f" data-t="cons"><th>Hunkøn <span class="tag f">f</span></th>
+      <td>una casa <span class="da-cell">et hus</span></td>
+      <td class="def-sg">la casa</td>
+      <td>le case</td></tr>
+    <tr class="fem" data-g="f" data-t="vowel"><th>Hunkøn, vokal</th>
+      <td>un’ arancia <span class="da-cell">en appelsin</span></td>
+      <td class="def-sg">l’ arancia</td>
+      <td>le arance</td></tr>
+    <tr class="masc" data-g="m" data-t="cons"><th>Hankøn <span class="tag m">m</span></th>
+      <td>un fiore <span class="da-cell">en blomst</span></td>
+      <td class="def-sg">il fiore</td>
+      <td>i fiori</td></tr>
+    <tr class="masc" data-g="m" data-t="vowel"><th>Hankøn, vokal</th>
+      <td>un amico <span class="da-cell">en ven</span></td>
+      <td class="def-sg">l’ amico</td>
+      <td>gli amici</td></tr>
+    <tr class="masc2" data-g="m" data-t="special"><th>Hankøn: s+kons., z, ps, gn</th>
+      <td>uno studente <span class="da-cell">en studerende</span></td>
+      <td class="def-sg">lo studente</td>
+      <td>gli studenti</td></tr>
+    <tr class="masc2" data-g="m" data-t="special2"><th>… flere af samme</th>
+      <td>uno scialle / sbaglio / zaino / zio</td>
+      <td class="def-sg">lo scialle / sbaglio / zaino / zio</td>
+      <td>gli scialli / sbagli / zaini / zii</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ NAVNEORD ============ -->
+<h2>Om navneord <span class="da">– i nomi</span></h2>
+<div class="card">
+  <p><strong>Køn:</strong> Hvert navneord er enten <span class="tag m">hankøn</span> eller
+  <span class="tag f">hunkøn</span>. Tommelfingerregel:</p>
+  <ul>
+    <li>Ender på <strong>-o</strong> → ofte hankøn: <span class="ex">il libro</span> (bogen)</li>
+    <li>Ender på <strong>-a</strong> → ofte hunkøn: <span class="ex">la casa</span> (huset)</li>
+    <li>Ender på <strong>-e</strong> → kan være begge – skal læres udenad: <span class="ex">il fiore</span> (m), <span class="ex">la notte</span> (f)</li>
+  </ul>
+  <p><strong>Flertal:</strong> <span class="ex">-o → -i</span>, <span class="ex">-a → -e</span>,
+  <span class="ex">-e → -i</span>. Eks.: libro → libri, casa → case, fiore → fiori.</p>
+</div>
+
+<!-- ============ TILLÆGSORD ============ -->
+<h2>Om tillægsord <span class="da">– gli aggettivi</span></h2>
+<div class="card">
+  <p>Tillægsord (adjektiver) <strong>retter sig efter navneordet</strong> i køn og tal.
+  Som regel står de <em>efter</em> navneordet: <span class="ex">una casa rossa</span> (et rødt hus).</p>
+  <table id="adj-table" style="box-shadow:none; margin:8px 0">
+    <thead><tr><th>Type</th><th>hankøn ental</th><th>hunkøn ental</th><th>hankøn flertal</th><th>hunkøn flertal</th></tr></thead>
+    <tbody>
+      <tr><th>på <strong>-o</strong> (rosso = rød)</th>
+        <td id="a-o-m-sg">ross<b>o</b></td><td id="a-o-f-sg">ross<b>a</b></td>
+        <td id="a-o-m-pl">ross<b>i</b></td><td id="a-o-f-pl">ross<b>e</b></td></tr>
+      <tr><th>på <strong>-e</strong> (grande = stor)</th>
+        <td id="a-e-m-sg">grand<b>e</b></td><td id="a-e-f-sg">grand<b>e</b></td>
+        <td id="a-e-m-pl">grand<b>i</b></td><td id="a-e-f-pl">grand<b>i</b></td></tr>
+    </tbody>
+  </table>
+  <p class="da" style="margin:0">Bemærk: tillægsord på <strong>-e</strong> skelner kun mellem ental og flertal, ikke køn.</p>
+</div>
+
+<footer>Prototype B · token lineage · bøjningerne følger de to håndskrevne tabeller. Buono studio! 🇮🇹</footer>
+
+</div>
+
+<script>
+/* ---------- DATA (unchanged from index.html) ---------- */
+const subjects = [
+  {it:"Io",  da:"Jeg", p:0},
+  {it:"Tu",  da:"Du",  p:1},
+  {it:"Lui", da:"Han", p:2},
+  {it:"Lei", da:"Hun", p:2},
+  {it:"Noi", da:"Vi",  p:3},
+  {it:"Voi", da:"I",   p:4},
+  {it:"Loro",da:"De",  p:5},
+];
+const endings = {
+  are:["o","i","a","iamo","ate","ano"],
+  ere:["o","i","e","iamo","ete","ono"],
+  ire:["o","i","e","iamo","ite","ono"],
+};
+const verbs = [
+  {inf:"parlare",  stem:"parl",  g:"are", da:"taler"},
+  {inf:"comprare", stem:"compr", g:"are", da:"køber"},
+  {inf:"prendere", stem:"prend", g:"ere", da:"tager"},
+  {inf:"vedere",   stem:"ved",   g:"ere", da:"ser"},
+  {inf:"dormire",  stem:"dorm",  g:"ire", da:"sover"},
+  {inf:"sentire",  stem:"sent",  g:"ire", da:"hører"},
+];
+const nouns = [
+  {sg:"casa",     g:"f", t:"cons",    row:"cons",    da:"hus"},
+  {sg:"arancia",  g:"f", t:"vowel",   row:"vowel",   da:"appelsin"},
+  {sg:"fiore",    g:"m", t:"cons",    row:"cons",    da:"blomst"},
+  {sg:"amico",    g:"m", t:"vowel",   row:"vowel",   da:"ven"},
+  {sg:"studente", g:"m", t:"special", row:"special", da:"studerende"},
+  {sg:"libro",    g:"m", t:"cons",    row:"cons",    da:"bog"},
+];
+const adjs = [
+  {type:"none", da:""},
+  {type:"o", base:"ross",  da:"rød"},
+  {type:"o", base:"piccol",da:"lille"},
+  {type:"o", base:"bell",  da:"smuk"},
+  {type:"e", base:"grand", da:"stor"},
+  {type:"e", base:"verd",  da:"grøn"},
+];
+
+/* ---------- LOGIC (unchanged) ---------- */
+function definiteArticle(n){
+  if(n.g==="f") return (n.t==="vowel") ? "l’" : "la";
+  if(n.t==="vowel")   return "l’";
+  if(n.t==="special") return "lo";
+  return "il";
+}
+const joinArt = (art,w)=> art.endsWith("’") ? art+w : art+" "+w;
+function adjForm(a,gender){
+  if(a.type==="none") return "";
+  if(a.type==="o") return a.base + (gender==="m"?"o":"a");
+  return a.base + "e";
+}
+
+/* helpers for descriptive labels */
+const personLabel = ["io (jeg)","tu (du)","lui/lei (han/hun)","noi (vi)","voi (I)","loro (de)"];
+const typeLabel = {cons:"konsonant", vowel:"vokal", special:"s+kons./z", special2:"s+kons./z"};
+const genderLabel = g => g==="f" ? "hunkøn" : "hankøn";
+
+/* ---------- UI SETUP ---------- */
+const $ = id=>document.getElementById(id);
+subjects.forEach((s,i)=> $("subject").add(new Option(`${s.it} (${s.da.toLowerCase()})`, i)));
+verbs.forEach((v,i)=> $("verb").add(new Option(`${v.inf} – ${v.da}`, i)));
+nouns.forEach((n,i)=> $("noun").add(new Option(`${n.sg} – ${n.da}`, i)));
+adjs.forEach((a,i)=> $("adj").add(new Option(a.type==="none"?"(intet)":`${a.base}… – ${a.da}`, i)));
+$("adj").selectedIndex = 1;
+
+function clearHl(){
+  document.querySelectorAll(".hl").forEach(e=>e.classList.remove("hl"));
+  document.querySelectorAll(".hl-row").forEach(e=>e.classList.remove("hl-row"));
+}
+
+/* highlight a target element in the full tables + smooth-scroll into view */
+let scrollTimer=null;
+function traceInTables(target){
+  clearHl();
+  if(!target) return;
+  if(target.cell) target.cell.classList.add("hl");
+  if(target.row) target.row.classList.add("hl-row");
+  const focus = target.cell || target.row;
+  if(focus){
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(()=> focus.scrollIntoView({behavior:"smooth", block:"center"}), 40);
+  }
+}
+
+/* escape helper */
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* build a tiny table fragment HTML; hot = {r,c} index into rows */
+function miniTable(cols, rows, hot){
+  let h = '<table class="mini"><thead><tr>';
+  cols.forEach(c=> h += `<th>${esc(c)}</th>`);
+  h += '</tr></thead><tbody>';
+  rows.forEach((r,ri)=>{
+    h += '<tr>';
+    r.forEach((cell,ci)=>{
+      const isHot = hot && hot.r===ri && hot.c===ci;
+      h += `<td class="${isHot?'cell-hot':''}">${esc(cell)}</td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  return h;
+}
+
+/* ---------- render the four tokens ---------- */
+function render(){
+  const s = subjects[$("subject").value];
+  const v = verbs[$("verb").value];
+  const n = nouns[$("noun").value];
+  const a = adjs[$("adj").value];
+
+  const verbForm = v.stem + endings[v.g][s.p];
+  const art = definiteArticle(n);
+  const adjF = adjForm(a, n.g);
+  const ending = endings[v.g][s.p];
+
+  /* token definitions: text, danish gloss, color class, source card builder, table target */
+  const tokens = [];
+
+  /* --- PERSON (purple) --- */
+  tokens.push({
+    text: s.it, da: s.da.toLowerCase(), cls:"tk-p",
+    card: ()=>({
+      title:`<span class="swatch" style="background:var(--purple)"></span>Person`,
+      mini: miniTable(["Person","Pronomen"], [[s.da.toLowerCase(), s.it.toLowerCase()]], {r:0,c:1}),
+      note:`Subjektet bestemmer hvilken <b>række</b> i Tabel 1 verbets endelse hentes fra: <b>${esc(personLabel[s.p])}</b>.`
+    }),
+    target: ()=>{
+      const cell = $(`v-${s.p}-${v.g}`);
+      return {cell, row: cell ? cell.parentElement : null};
+    }
+  });
+
+  /* --- VERB (green) --- */
+  /* mini 2x2 fragment of Tabel 1 around the chosen person × verb-group cell */
+  tokens.push({
+    text: verbForm, da: v.da, cls:"tk-v",
+    card: ()=>{
+      const otherP = s.p===0 ? 1 : 0;            // a neighbouring person row for context
+      const otherG = v.g==="are" ? "ere" : "are"; // a neighbouring group col for context
+      const cellFor = (p,g)=> {
+        const verbEx = v.stem + endings[g][p];
+        return `-${endings[g][p]}`;
+      };
+      // 2x2: rows = [chosen person, other person], cols = [chosen group, other group]
+      const rows = [
+        [`-${endings[v.g][s.p]}`, `-${endings[otherG][s.p]}`],
+        [`-${endings[v.g][otherP]}`, `-${endings[otherG][otherP]}`],
+      ];
+      return {
+        title:`<span class="swatch" style="background:var(--green)"></span>Tabel 1 · endelse`,
+        mini: miniTable([`-${v.g}`, `-${otherG}`], rows, {r:0,c:0}),
+        note:`<b>${esc(v.stem)}</b> (stamme af <i>${esc(v.inf)}</i>) + endelsen <b>-${esc(ending)}</b> `+
+             `for <b>${esc(personLabel[s.p])}</b> i gruppen <b>-${esc(v.g)}</b> → <b>${esc(verbForm)}</b>.`
+      };
+    },
+    target: ()=>{
+      const cell = $(`v-${s.p}-${v.g}`);
+      return {cell, row: cell ? cell.parentElement : null};
+    }
+  });
+
+  /* --- ARTICLE + NOUN (blue) : two tokens sharing the same table row --- */
+  const nounTarget = ()=>{
+    const row = document.querySelector(`#noun-table tr[data-g="${n.g}"][data-t="${n.row}"]`);
+    const cell = row ? row.querySelector(".def-sg") : null;
+    return {cell, row};
+  };
+  /* article token */
+  tokens.push({
+    text: art.trim(), da:"", cls:"tk-n",
+    card: ()=>({
+      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · artikel`,
+      mini: miniTable(["Ubestemt","Bestemt ental","Flertal"],
+        [nounRowCells(n)], {r:0,c:1}),
+      note:`Bestemt artikel <b>${esc(art.trim())}</b> vælges fordi <b>${esc(n.sg)}</b> er `+
+           `<b>${esc(genderLabel(n.g))}</b> og starter med <b>${esc(typeLabel[n.t]||n.t)}</b>.`
+    }),
+    target: nounTarget
+  });
+  /* noun token */
+  tokens.push({
+    text: n.sg, da:n.da, cls:"tk-n",
+    card: ()=>({
+      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · navneord`,
+      mini: miniTable(["Ubestemt","Bestemt ental","Flertal"],
+        [nounRowCells(n)], {r:0,c:1}),
+      note:`Navneordet <b>${esc(n.sg)}</b> (${esc(n.da)}) er <b>${esc(genderLabel(n.g))}</b>. `+
+           `Sammen med artiklen: <b>${esc(joinArt(art, n.sg))}</b>.`
+    }),
+    target: nounTarget
+  });
+
+  /* --- ADJECTIVE (amber) --- */
+  if(a.type!=="none" && adjF){
+    tokens.push({
+      text: adjF, da:a.da, cls:"tk-a",
+      card: ()=>{
+        const base = a.base;
+        // 2x2 fragment: rows = [-o type, -e type], cols = [hankøn ental, hunkøn ental]
+        const rows = [
+          [`ross-o`, `ross-a`],
+          [`grand-e`, `grand-e`],
+        ];
+        const hotR = a.type==="o" ? 0 : 1;
+        const hotC = n.g==="m" ? 0 : 1;
+        return {
+          title:`<span class="swatch" style="background:var(--amber)"></span>Tillægsord · bøjning`,
+          mini: miniTable(["hankøn ent.","hunkøn ent."], rows, {r:hotR, c:hotC}),
+          note:`Tillægsordet retter sig efter navneordet. <b>${esc(base)}-</b> (type -${esc(a.type)}) `+
+               `i <b>${esc(genderLabel(n.g))} ental</b> → <b>${esc(adjF)}</b>.`
+        };
+      },
+      target: ()=>{
+        const cell = $(`a-${a.type}-${n.g}-sg`);
+        return {cell, row: cell ? cell.parentElement : null};
+      }
+    });
+  }
+
+  /* paint tokens */
+  const box = $("tokens");
+  box.innerHTML = "";
+  tokens.forEach((tk, idx)=>{
+    const wrap = document.createElement("div");
+    wrap.className = "token-wrap";
+    const el = document.createElement("div");
+    el.className = "token " + tk.cls;
+    el.tabIndex = 0;
+    el.innerHTML = `${esc(tk.text)}${tk.da?`<span class="tk-da">${esc(tk.da)}</span>`:''}`;
+    wrap.appendChild(el);
+
+    const card = document.createElement("div");
+    card.className = "source-card";
+    wrap.appendChild(card);
+
+    function show(){
+      const data = tk.card();
+      card.innerHTML = `<div class="sc-head">${data.title}</div>${data.mini}<div class="sc-note">${data.note}</div>`;
+      // hide siblings
+      document.querySelectorAll(".source-card.show").forEach(c=>c.classList.remove("show"));
+      document.querySelectorAll(".token.active").forEach(t=>t.classList.remove("active"));
+      card.classList.add("show");
+      el.classList.add("active");
+      traceInTables(tk.target());
+    }
+    function hide(){
+      card.classList.remove("show");
+      el.classList.remove("active");
+    }
+
+    el.addEventListener("mouseenter", show);
+    el.addEventListener("mouseleave", hide);
+    el.addEventListener("focus", show);
+    el.addEventListener("blur", hide);
+    // tap toggle for touch
+    el.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      if(card.classList.contains("show")) hide(); else show();
+    });
+
+    box.appendChild(wrap);
+
+    // punctuation after last token
+    if(idx===tokens.length-1){
+      const p = document.createElement("div");
+      p.className = "punct";
+      p.textContent = ".";
+      box.appendChild(p);
+    }
+  });
+
+  // default: highlight verb cell so tables aren't empty on load
+  traceInTables({cell: $(`v-${s.p}-${v.g}`), row: $(`v-${s.p}-${v.g}`) ? $(`v-${s.p}-${v.g}`).parentElement : null});
+}
+
+/* returns the three article cells (ubestemt / bestemt ental / flertal) text for a noun's row */
+function nounRowCells(n){
+  const row = document.querySelector(`#noun-table tr[data-g="${n.g}"][data-t="${n.row}"]`);
+  if(!row) return ["","",""];
+  const tds = row.querySelectorAll("td");
+  const clean = el => el ? el.textContent.replace(/\s+/g," ").trim() : "";
+  return [clean(tds[0]), clean(tds[1]), clean(tds[2])];
+}
+
+/* dismiss popovers when tapping elsewhere */
+document.addEventListener("click", ()=>{
+  document.querySelectorAll(".source-card.show").forEach(c=>c.classList.remove("show"));
+  document.querySelectorAll(".token.active").forEach(t=>t.classList.remove("active"));
+});
+
+["subject","verb","noun","adj"].forEach(id=> $(id).addEventListener("change", render));
+render();
+</script>
+</body>
+</html>
