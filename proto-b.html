@@ -526,6 +526,20 @@ function render(){
     });
   }
 
+  /* highlight ALL used cells at once (verb + article/noun + adjective), no scroll.
+     This is the resting state so the tables always show what the sentence uses. */
+  function addHl(t){ if(!t) return; if(t.cell) t.cell.classList.add("hl"); if(t.row) t.row.classList.add("hl-row"); }
+  function highlightDefaults(){
+    clearHl();
+    const vc = $(`v-${s.p}-${v.g}`);
+    addHl({cell:vc, row: vc ? vc.parentElement : null});
+    addHl(nounTarget());
+    if(a.type!=="none" && adjF){
+      const ac = $(`a-${a.type}-${n.g}-${plural?"pl":"sg"}`);
+      addHl({cell:ac, row: ac ? ac.parentElement : null});
+    }
+  }
+
   /* paint tokens */
   const box = $("tokens");
   box.innerHTML = "";
@@ -555,6 +569,7 @@ function render(){
     function hideBubble(){
       card.classList.remove("show");
       el.classList.remove("active");
+      highlightDefaults(); // restore the "all used cells" resting state
     }
     // move = scroll the full table to the source cell (only on click)
     function moveToTable(){
@@ -583,8 +598,8 @@ function render(){
     }
   });
 
-  // default: highlight verb cell so tables aren't empty (no scroll on dropdown change)
-  traceInTables({cell: $(`v-${s.p}-${v.g}`), row: $(`v-${s.p}-${v.g}`) ? $(`v-${s.p}-${v.g}`).parentElement : null}, false);
+  // resting state: highlight every used cell so the tables always show what's in use
+  highlightDefaults();
 }
 
 /* returns the three article cells (ubestemt / bestemt ental / flertal) text for a noun's row */
