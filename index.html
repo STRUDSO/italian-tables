@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Italiensk – Sætningsbyggeren</title>
+<style>
+  :root{
+    --bg:#faf7f0; --ink:#2b2b2b; --line:#d8cfbc;
+    --green:#2e7d4f; --green-bg:#e7f3ea;
+    --blue:#2b5d8a; --blue-bg:#e6eef6;
+    --red:#b5443a; --red-bg:#f7e7e5;
+    --amber:#9a6b1e; --amber-bg:#f6eed9;
+    --shadow:0 2px 10px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:24px 18px 80px}
+  header h1{margin:0 0 4px; font-size:2rem; letter-spacing:-.5px}
+  header p{margin:0; color:#6b6354}
+  h2{margin:42px 0 6px; font-size:1.4rem; border-bottom:2px solid var(--line); padding-bottom:6px}
+  h2 .da{color:#8a8170; font-weight:400; font-size:1rem}
+  .lead{color:#5c5547; max-width:62ch}
+  table{border-collapse:collapse; width:100%; background:#fff; box-shadow:var(--shadow); border-radius:10px; overflow:hidden; margin:16px 0}
+  caption{caption-side:top; text-align:left; font-weight:600; padding:0 0 8px; color:#6b6354}
+  th,td{border:1px solid var(--line); padding:9px 11px; text-align:left; font-size:.96rem}
+  thead th{background:#f1ebdd}
+  tbody th{background:#f7f3ea; font-weight:600; white-space:nowrap}
+  .da-cell{color:#9a927f; font-size:.82rem; display:block}
+  .end{font-weight:700; font-variant:small-caps}
+  .are{color:var(--green)} .ere{color:var(--blue)} .ire{color:var(--red)}
+  .ex{font-style:italic; color:#444}
+  /* article colour bands */
+  .fem{background:var(--red-bg)} .masc{background:var(--blue-bg)} .masc2{background:var(--amber-bg)}
+  .tag{display:inline-block; font-size:.72rem; padding:1px 7px; border-radius:20px; vertical-align:middle; margin-left:6px}
+  .tag.f{background:var(--red-bg); color:var(--red)}
+  .tag.m{background:var(--blue-bg); color:var(--blue)}
+  .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:14px 0; box-shadow:var(--shadow)}
+  /* builder */
+  .builder{background:#fff; border-radius:12px; box-shadow:var(--shadow); padding:18px; margin-top:14px}
+  .row{display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end}
+  .field{display:flex; flex-direction:column; gap:4px}
+  .field label{font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; color:#8a8170}
+  select{font-size:1rem; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#faf7f0; min-width:140px}
+  .output{margin-top:18px; padding:16px 18px; background:var(--green-bg); border-radius:10px; border:1px solid #cfe3d6}
+  .output .it{font-size:1.5rem; font-weight:700; color:var(--green)}
+  .output .gloss{color:#5c5547; margin-top:4px}
+  .output .note{color:#7a7263; font-size:.85rem; margin-top:8px}
+  .pill{display:inline-block; padding:2px 8px; border-radius:6px; background:#fff; border:1px solid var(--line); margin:0 2px}
+  footer{margin-top:50px; color:#9a927f; font-size:.82rem; text-align:center}
+  @media(max-width:560px){ select{min-width:120px} header h1{font-size:1.5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Italiensk 🇮🇹 – Sætningsbyggeren</h1>
+  <p>Dine to tabeller, renskrevet – plus navneord, tillægsord og en lille maskine til at bygge sætninger.</p>
+</header>
+
+<!-- ============ TABEL 1: UDSAGNSORD ============ -->
+<h2>Tabel 1 · Udsagnsord <span class="da">– bøjning i nutid (presente)</span></h2>
+<p class="lead">Find personen i venstre kolonne, vælg verbets gruppe (<span class="are">-are</span>,
+<span class="ere">-ere</span> eller <span class="ire">-ire</span>) og sæt endelsen på stammen.</p>
+
+<table>
+  <caption>Regelmæssig nutid · endelser og eksempler</caption>
+  <thead>
+    <tr>
+      <th>Person</th>
+      <th>Pronomen</th>
+      <th class="are">-are <span class="da">(parlare = tale)</span></th>
+      <th class="ere">-ere <span class="da">(prendere = tage)</span></th>
+      <th class="ire">-ire <span class="da">(dormire = sove)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th>jeg</th><td>io</td>
+      <td><span class="end are">-o</span> · <span class="ex">parlo</span></td>
+      <td><span class="end ere">-o</span> · <span class="ex">prendo</span></td>
+      <td><span class="end ire">-o</span> · <span class="ex">dormo</span></td></tr>
+    <tr><th>du</th><td>tu</td>
+      <td><span class="end are">-i</span> · <span class="ex">parli</span></td>
+      <td><span class="end ere">-i</span> · <span class="ex">prendi</span></td>
+      <td><span class="end ire">-i</span> · <span class="ex">dormi</span></td></tr>
+    <tr><th>han / hun / De</th><td>lui / lei / Lei</td>
+      <td><span class="end are">-a</span> · <span class="ex">parla</span></td>
+      <td><span class="end ere">-e</span> · <span class="ex">prende</span></td>
+      <td><span class="end ire">-e</span> · <span class="ex">dorme</span></td></tr>
+    <tr><th>vi</th><td>noi</td>
+      <td><span class="end are">-iamo</span> · <span class="ex">parliamo</span></td>
+      <td><span class="end ere">-iamo</span> · <span class="ex">prendiamo</span></td>
+      <td><span class="end ire">-iamo</span> · <span class="ex">dormiamo</span></td></tr>
+    <tr><th>I</th><td>voi</td>
+      <td><span class="end are">-ate</span> · <span class="ex">parlate</span></td>
+      <td><span class="end ere">-ete</span> · <span class="ex">prendete</span></td>
+      <td><span class="end ire">-ite</span> · <span class="ex">dormite</span></td></tr>
+    <tr><th>de</th><td>loro</td>
+      <td><span class="end are">-ano</span> · <span class="ex">parlano</span></td>
+      <td><span class="end ere">-ono</span> · <span class="ex">prendono</span></td>
+      <td><span class="end ire">-ono</span> · <span class="ex">dormono</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ============ TABEL 2: NAVNEORD + ARTIKLER ============ -->
+<h2>Tabel 2 · Navneord & artikler <span class="da">– køn, ubestemt/bestemt, ental/flertal</span></h2>
+<p class="lead">Navneord har køn (hankøn/hunkøn). Artiklen (a / en / -et) retter sig efter
+ordets køn <em>og</em> dets første bogstav.</p>
+
+<table>
+  <caption>Mønstre for artikler</caption>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Ubestemt <span class="da">(en/et)</span></th>
+      <th>Bestemt ental <span class="da">(-en/-et)</span></th>
+      <th>Flertal <span class="da">(bestemt)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="fem"><th>Hunkøn <span class="tag f">f</span></th>
+      <td>una casa <span class="da-cell">et hus</span></td>
+      <td>la casa</td>
+      <td>le case</td></tr>
+    <tr class="fem"><th>Hunkøn, vokal</th>
+      <td>un’ arancia <span class="da-cell">en appelsin</span></td>
+      <td>l’ arancia</td>
+      <td>le arance</td></tr>
+    <tr class="masc"><th>Hankøn <span class="tag m">m</span></th>
+      <td>un fiore <span class="da-cell">en blomst</span></td>
+      <td>il fiore</td>
+      <td>i fiori</td></tr>
+    <tr class="masc"><th>Hankøn, vokal</th>
+      <td>un amico <span class="da-cell">en ven</span></td>
+      <td>l’ amico</td>
+      <td>gli amici</td></tr>
+    <tr class="masc2"><th>Hankøn: s+kons., z, ps, gn</th>
+      <td>uno studente <span class="da-cell">en studerende</span></td>
+      <td>lo studente</td>
+      <td>gli studenti</td></tr>
+    <tr class="masc2"><th>… flere af samme</th>
+      <td>uno scialle / sbaglio / zaino / zio</td>
+      <td>lo scialle / sbaglio / zaino / zio</td>
+      <td>gli scialli / sbagli / zaini / zii</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ NAVNEORD ============ -->
+<h2>Om navneord <span class="da">– i nomi</span></h2>
+<div class="card">
+  <p><strong>Køn:</strong> Hvert navneord er enten <span class="tag m">hankøn</span> eller
+  <span class="tag f">hunkøn</span>. Tommelfingerregel:</p>
+  <ul>
+    <li>Ender på <strong>-o</strong> → ofte hankøn: <span class="ex">il libro</span> (bogen)</li>
+    <li>Ender på <strong>-a</strong> → ofte hunkøn: <span class="ex">la casa</span> (huset)</li>
+    <li>Ender på <strong>-e</strong> → kan være begge – skal læres udenad: <span class="ex">il fiore</span> (m), <span class="ex">la notte</span> (f)</li>
+  </ul>
+  <p><strong>Flertal:</strong> <span class="ex">-o → -i</span>, <span class="ex">-a → -e</span>,
+  <span class="ex">-e → -i</span>. Eks.: libro → libri, casa → case, fiore → fiori.</p>
+</div>
+
+<!-- ============ TILLÆGSORD ============ -->
+<h2>Om tillægsord <span class="da">– gli aggettivi</span></h2>
+<div class="card">
+  <p>Tillægsord (adjektiver) <strong>retter sig efter navneordet</strong> i køn og tal.
+  Som regel står de <em>efter</em> navneordet: <span class="ex">una casa rossa</span> (et rødt hus).</p>
+  <table style="box-shadow:none; margin:8px 0">
+    <thead><tr><th>Type</th><th>hankøn ental</th><th>hunkøn ental</th><th>hankøn flertal</th><th>hunkøn flertal</th></tr></thead>
+    <tbody>
+      <tr><th>på <strong>-o</strong> (rosso = rød)</th><td>ross<b>o</b></td><td>ross<b>a</b></td><td>ross<b>i</b></td><td>ross<b>e</b></td></tr>
+      <tr><th>på <strong>-e</strong> (grande = stor)</th><td>grand<b>e</b></td><td>grand<b>e</b></td><td>grand<b>i</b></td><td>grand<b>i</b></td></tr>
+    </tbody>
+  </table>
+  <p class="da" style="margin:0">Bemærk: tillægsord på <strong>-e</strong> skelner kun mellem ental og flertal, ikke køn.</p>
+</div>
+
+<!-- ============ SÆTNINGSBYGGER ============ -->
+<h2>Sætningsbyggeren <span class="da">– sæt tabellerne sammen</span></h2>
+<p class="lead">Vælg en person, et navneord, et udsagnsord og evt. et tillægsord.
+Maskinen bøjer alt korrekt efter tabellerne ovenfor.</p>
+
+<div class="builder">
+  <div class="row">
+    <div class="field">
+      <label>Person</label>
+      <select id="subject"></select>
+    </div>
+    <div class="field">
+      <label>Udsagnsord</label>
+      <select id="verb"></select>
+    </div>
+    <div class="field">
+      <label>Navneord</label>
+      <select id="noun"></select>
+    </div>
+    <div class="field">
+      <label>Tillægsord</label>
+      <select id="adj"></select>
+    </div>
+  </div>
+
+  <div class="output">
+    <div class="it" id="out-it">…</div>
+    <div class="gloss" id="out-da">…</div>
+    <div class="note" id="out-note"></div>
+  </div>
+</div>
+
+<footer>Lavet som læringshjælp · bøjningerne følger de to håndskrevne tabeller. Buono studio! 🇮🇹</footer>
+
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+const subjects = [
+  {it:"Io",        da:"Jeg",          p:0},
+  {it:"Tu",        da:"Du",           p:1},
+  {it:"Lui",       da:"Han",          p:2},
+  {it:"Lei",       da:"Hun",          p:2},
+  {it:"Noi",       da:"Vi",           p:3},
+  {it:"Voi",       da:"I",            p:4},
+  {it:"Loro",      da:"De",           p:5},
+];
+
+// verb endings indexed by group then person (0..5)
+const endings = {
+  are:["o","i","a","iamo","ate","ano"],
+  ere:["o","i","e","iamo","ete","ono"],
+  ire:["o","i","e","iamo","ite","ono"],
+};
+
+const verbs = [
+  {inf:"parlare",  stem:"parl",  g:"are", da:"taler"},
+  {inf:"comprare", stem:"compr", g:"are", da:"køber"},
+  {inf:"prendere", stem:"prend", g:"ere", da:"tager"},
+  {inf:"vedere",   stem:"ved",   g:"ere", da:"ser"},
+  {inf:"dormire",  stem:"dorm",  g:"ire", da:"sover"},
+  {inf:"sentire",  stem:"sent",  g:"ire", da:"hører"},
+];
+
+// nouns: gender m/f, plural form, art = leading-letter class for article choice
+//  artType: 'cons' normal consonant, 'vowel', 'special' (s+cons/z)
+const nouns = [
+  {sg:"casa",     pl:"case",     g:"f", t:"cons",    da:"hus",        daPl:"huse"},
+  {sg:"arancia",  pl:"arance",   g:"f", t:"vowel",   da:"appelsin",   daPl:"appelsiner"},
+  {sg:"fiore",    pl:"fiori",    g:"m", t:"cons",    da:"blomst",     daPl:"blomster"},
+  {sg:"amico",    pl:"amici",    g:"m", t:"vowel",   da:"ven",        daPl:"venner"},
+  {sg:"studente", pl:"studenti", g:"m", t:"special", da:"studerende", daPl:"studerende"},
+  {sg:"libro",    pl:"libri",    g:"m", t:"cons",    da:"bog",        daPl:"bøger"},
+];
+
+// adjectives: o-type takes 4 forms, e-type takes 2
+const adjs = [
+  {type:"none", o:"",      da:""},
+  {type:"o", base:"ross",  da:"rød"},
+  {type:"o", base:"piccol",da:"lille"},
+  {type:"o", base:"bell",  da:"smuk"},
+  {type:"e", base:"grand", da:"stor"},
+  {type:"e", base:"verd",  da:"grøn"},
+];
+
+/* ---------- ARTICLE LOGIC (definite) ---------- */
+function definiteArticle(noun, plural){
+  if(plural){
+    if(noun.g==="f") return "le";
+    return (noun.t==="cons") ? "i" : "gli";   // vowel & special -> gli
+  }
+  // singular
+  if(noun.g==="f") return (noun.t==="vowel") ? "l’" : "la";
+  if(noun.t==="vowel")   return "l’";
+  if(noun.t==="special") return "lo";
+  return "il";
+}
+function joinArt(art, word){
+  return art.endsWith("’") ? art+word : art+" "+word;
+}
+
+/* ---------- ADJECTIVE AGREEMENT ---------- */
+function adjForm(adj, gender, plural){
+  if(adj.type==="none") return "";
+  if(adj.type==="o"){
+    if(!plural) return adj.base + (gender==="m" ? "o":"a");
+    return adj.base + (gender==="m" ? "i":"e");
+  }
+  // e-type: only number matters
+  return adj.base + (plural ? "i":"e");
+}
+
+/* ---------- BUILD UI ---------- */
+const $ = id=>document.getElementById(id);
+subjects.forEach((s,i)=> $("subject").add(new Option(`${s.it} (${s.da.toLowerCase()})`, i)));
+verbs.forEach((v,i)=> $("verb").add(new Option(`${v.inf} – ${v.da}`, i)));
+nouns.forEach((n,i)=> $("noun").add(new Option(`${n.sg} – ${n.da}`, i)));
+adjs.forEach((a,i)=> $("adj").add(new Option(a.type==="none"?"(intet)":`${a.base}… – ${a.da}`, i)));
+$("adj").selectedIndex = 1;
+
+function render(){
+  const s = subjects[$("subject").value];
+  const v = verbs[$("verb").value];
+  const n = nouns[$("noun").value];
+  const a = adjs[$("adj").value];
+
+  // For the object noun we use 3rd-person style noun phrase, default plural=false.
+  const plural = false;
+  const verbForm = v.stem + endings[v.g][s.p];
+  const art = definiteArticle(n, plural);
+  const adjF = adjForm(a, n.g, plural);
+  const nounPhrase = joinArt(art, n.sg) + (adjF ? " "+adjF : "");
+
+  const it = `${s.it} ${verbForm} ${nounPhrase}.`;
+  const daAdj = a.type==="none" ? "" : " "+a.da;
+  const da = `${s.da} ${v.da} ${n.g==="f"?"":""}${n.da}${daAdj ? " ("+a.da.toLowerCase()+")":""}.`;
+
+  $("out-it").textContent = it;
+  $("out-da").textContent = `${s.da} ${v.da} ${n.da}${daAdj?` (`+a.da.toLowerCase()+`)`:''}.`;
+
+  $("out-note").innerHTML =
+    `Verbum: <span class="pill">${v.stem}</span> + <span class="pill">-${endings[v.g][s.p]}</span> `+
+    `(${v.g}, ${s.it.toLowerCase()}) &nbsp;·&nbsp; `+
+    `Artikel: <span class="pill">${art.trim()}</span> (${n.g==="f"?"hunkøn":"hankøn"}, ${n.t==="vowel"?"vokal":n.t==="special"?"s+kons./z":"kons."})`+
+    (adjF? ` &nbsp;·&nbsp; Tillægsord bøjet: <span class="pill">${adjF}</span>`:``);
+}
+
+["subject","verb","noun","adj"].forEach(id=> $(id).addEventListener("change", render));
+render();
+</script>
+</body>
+</html>
