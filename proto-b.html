@@ -112,7 +112,7 @@
 
 <header>
   <h1>Italiensk 🇮🇹 – Token lineage <span class="da" style="font-size:1rem;color:#8a8170">(Prototype B)</span></h1>
-  <p>Byg en sætning foroven. <em>Klik</em> på et ord for at se præcis hvilken tabel, række og celle det kommer fra.</p>
+  <p>Byg en sætning foroven. <em>Hold musen over</em> et ord for at se boblen med kilden – <em>klik</em> for at rulle ned til feltet i tabellen.</p>
 </header>
 
 <!-- ============ SÆTNINGSBYGGER (TOP) ============ -->
@@ -134,6 +134,10 @@
       <label><span class="dot dot-a"></span>Tillægsord</label>
       <select id="adj"></select>
     </div>
+    <div class="field">
+      <label><span class="dot dot-n"></span>Form</label>
+      <select id="form"></select>
+    </div>
   </div>
 
   <div class="sentence-box">
@@ -144,7 +148,7 @@
       <span><i style="background:var(--blue)"></i> artikel + navneord</span>
       <span><i style="background:var(--amber)"></i> tillægsord</span>
     </div>
-    <p class="hint">↓ Klik på et ord, så lyser tabellerne nedenfor op og scroller til det felt ordet stammer fra.</p>
+    <p class="hint">↓ Hover viser boblen (uden at flytte siden) · klik ruller tabellen ned til det markerede felt.</p>
   </div>
 </div>
 
@@ -291,12 +295,18 @@ const verbs = [
   {inf:"sentire",  stem:"sent",  g:"ire", da:"hører"},
 ];
 const nouns = [
-  {sg:"casa",     g:"f", t:"cons",    row:"cons",    da:"hus"},
-  {sg:"arancia",  g:"f", t:"vowel",   row:"vowel",   da:"appelsin"},
-  {sg:"fiore",    g:"m", t:"cons",    row:"cons",    da:"blomst"},
-  {sg:"amico",    g:"m", t:"vowel",   row:"vowel",   da:"ven"},
-  {sg:"studente", g:"m", t:"special", row:"special", da:"studerende"},
-  {sg:"libro",    g:"m", t:"cons",    row:"cons",    da:"bog"},
+  {sg:"casa",     pl:"case",     g:"f", t:"cons",    row:"cons",    da:"hus",        daPl:"huse"},
+  {sg:"arancia",  pl:"arance",   g:"f", t:"vowel",   row:"vowel",   da:"appelsin",   daPl:"appelsiner"},
+  {sg:"fiore",    pl:"fiori",    g:"m", t:"cons",    row:"cons",    da:"blomst",     daPl:"blomster"},
+  {sg:"amico",    pl:"amici",    g:"m", t:"vowel",   row:"vowel",   da:"ven",        daPl:"venner"},
+  {sg:"studente", pl:"studenti", g:"m", t:"special", row:"special", da:"studerende", daPl:"studerende"},
+  {sg:"libro",    pl:"libri",    g:"m", t:"cons",    row:"cons",    da:"bog",        daPl:"bøger"},
+];
+/* the three forms = the three columns of Tabel 2 */
+const forms = [
+  {key:"ubestemt", col:0, plural:false, label:"Ubestemt ental (un/una)"},
+  {key:"bestemt",  col:1, plural:false, label:"Bestemt ental (il/la)"},
+  {key:"flertal",  col:2, plural:true,  label:"Flertal (i/le/gli)"},
 ];
 const adjs = [
   {type:"none", da:""},
@@ -307,18 +317,36 @@ const adjs = [
   {type:"e", base:"verd",  da:"grøn"},
 ];
 
-/* ---------- LOGIC (unchanged) ---------- */
+/* ---------- LOGIC (now form-aware) ---------- */
 function definiteArticle(n){
   if(n.g==="f") return (n.t==="vowel") ? "l’" : "la";
   if(n.t==="vowel")   return "l’";
   if(n.t==="special") return "lo";
   return "il";
 }
+function indefiniteArticle(n){            // un / una / un’ / uno
+  if(n.g==="f") return (n.t==="vowel") ? "un’" : "una";
+  if(n.t==="special") return "uno";
+  return "un";                            // m cons + m vowel both take "un"
+}
+function pluralArticle(n){                // bestemt flertal: le / i / gli
+  if(n.g==="f") return "le";
+  return (n.t==="cons") ? "i" : "gli";    // vowel & special → gli
+}
+/* pick article for the chosen form */
+function articleFor(n, form){
+  if(form.key==="ubestemt") return indefiniteArticle(n);
+  if(form.key==="flertal")  return pluralArticle(n);
+  return definiteArticle(n);
+}
 const joinArt = (art,w)=> art.endsWith("’") ? art+w : art+" "+w;
-function adjForm(a,gender){
+function adjForm(a, gender, plural){
   if(a.type==="none") return "";
-  if(a.type==="o") return a.base + (gender==="m"?"o":"a");
-  return a.base + "e";
+  if(a.type==="o"){
+    if(!plural) return a.base + (gender==="m"?"o":"a");
+    return a.base + (gender==="m"?"i":"e");
+  }
+  return a.base + (plural ? "i" : "e");    // e-type: only number matters
 }
 
 /* helpers for descriptive labels */
@@ -332,7 +360,9 @@ subjects.forEach((s,i)=> $("subject").add(new Option(`${s.it} (${s.da.toLowerCas
 verbs.forEach((v,i)=> $("verb").add(new Option(`${v.inf} – ${v.da}`, i)));
 nouns.forEach((n,i)=> $("noun").add(new Option(`${n.sg} – ${n.da}`, i)));
 adjs.forEach((a,i)=> $("adj").add(new Option(a.type==="none"?"(intet)":`${a.base}… – ${a.da}`, i)));
+forms.forEach((f,i)=> $("form").add(new Option(f.label, i)));
 $("adj").selectedIndex = 1;
+$("form").selectedIndex = 1; // bestemt ental as default
 
 function clearHl(){
   document.querySelectorAll(".hl").forEach(e=>e.classList.remove("hl"));
@@ -379,11 +409,16 @@ function render(){
   const v = verbs[$("verb").value];
   const n = nouns[$("noun").value];
   const a = adjs[$("adj").value];
+  const form = forms[$("form").value];
+  const plural = form.plural;
 
   const verbForm = v.stem + endings[v.g][s.p];
-  const art = definiteArticle(n);
-  const adjF = adjForm(a, n.g);
+  const art = articleFor(n, form);
+  const nounWord = plural ? n.pl : n.sg;
+  const nounDa = plural ? n.daPl : n.da;
+  const adjF = adjForm(a, n.g, plural);
   const ending = endings[v.g][s.p];
+  const formColLabel = ["Ubestemt","Bestemt ental","Flertal"][form.col];
 
   /* token definitions: text, danish gloss, color class, source card builder, table target */
   const tokens = [];
@@ -431,33 +466,34 @@ function render(){
     }
   });
 
-  /* --- ARTICLE + NOUN (blue) : two tokens sharing the same table row --- */
+  /* --- ARTICLE + NOUN (blue) : two tokens sharing the same table row/column --- */
   const nounTarget = ()=>{
     const row = document.querySelector(`#noun-table tr[data-g="${n.g}"][data-t="${n.row}"]`);
-    const cell = row ? row.querySelector(".def-sg") : null;
+    const cell = row ? row.querySelectorAll("td")[form.col] : null; // column = chosen form
     return {cell, row};
   };
   /* article token */
   tokens.push({
     text: art.trim(), da:"", cls:"tk-n",
     card: ()=>({
-      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · artikel`,
+      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · artikel (${esc(formColLabel.toLowerCase())})`,
       mini: miniTable(["Ubestemt","Bestemt ental","Flertal"],
-        [nounRowCells(n)], {r:0,c:1}),
-      note:`Bestemt artikel <b>${esc(art.trim())}</b> vælges fordi <b>${esc(n.sg)}</b> er `+
-           `<b>${esc(genderLabel(n.g))}</b> og starter med <b>${esc(typeLabel[n.t]||n.t)}</b>.`
+        [nounRowCells(n)], {r:0,c:form.col}),
+      note:`Artikel <b>${esc(art.trim())}</b> (${esc(formColLabel.toLowerCase())}) vælges fordi <b>${esc(nounWord)}</b> er `+
+           `<b>${esc(genderLabel(n.g))}</b>${plural?" i flertal":""} og starter med <b>${esc(typeLabel[n.t]||n.t)}</b>.`
     }),
     target: nounTarget
   });
   /* noun token */
   tokens.push({
-    text: n.sg, da:n.da, cls:"tk-n",
+    text: nounWord, da:nounDa, cls:"tk-n",
     card: ()=>({
-      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · navneord`,
+      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · navneord (${esc(plural?"flertal":"ental")})`,
       mini: miniTable(["Ubestemt","Bestemt ental","Flertal"],
-        [nounRowCells(n)], {r:0,c:1}),
-      note:`Navneordet <b>${esc(n.sg)}</b> (${esc(n.da)}) er <b>${esc(genderLabel(n.g))}</b>. `+
-           `Sammen med artiklen: <b>${esc(joinArt(art, n.sg))}</b>.`
+        [nounRowCells(n)], {r:0,c:form.col}),
+      note:`Navneordet <b>${esc(nounWord)}</b> (${esc(nounDa)}) er <b>${esc(genderLabel(n.g))}</b>`+
+           `${plural?` i flertal (${esc(n.sg)} → ${esc(n.pl)})`:""}. `+
+           `Sammen med artiklen: <b>${esc(joinArt(art, nounWord))}</b>.`
     }),
     target: nounTarget
   });
@@ -468,22 +504,23 @@ function render(){
       text: adjF, da:a.da, cls:"tk-a",
       card: ()=>{
         const base = a.base;
-        // 2x2 fragment: rows = [-o type, -e type], cols = [hankøn ental, hunkøn ental]
+        // 2x4 fragment: rows = [-o type, -e type], cols match the adjektiv-tabel
         const rows = [
-          [`ross-o`, `ross-a`],
-          [`grand-e`, `grand-e`],
+          ["ross-o","ross-a","ross-i","ross-e"],
+          ["grand-e","grand-e","grand-i","grand-i"],
         ];
         const hotR = a.type==="o" ? 0 : 1;
-        const hotC = n.g==="m" ? 0 : 1;
+        const hotC = (n.g==="m"?0:1) + (plural?2:0); // m-sg,f-sg,m-pl,f-pl
+        const tal = plural ? "flertal" : "ental";
         return {
-          title:`<span class="swatch" style="background:var(--amber)"></span>Tillægsord · bøjning`,
-          mini: miniTable(["hankøn ent.","hunkøn ent."], rows, {r:hotR, c:hotC}),
+          title:`<span class="swatch" style="background:var(--amber)"></span>Tillægsord · bøjning (${esc(tal)})`,
+          mini: miniTable(["m. ent.","f. ent.","m. fl.","f. fl."], rows, {r:hotR, c:hotC}),
           note:`Tillægsordet retter sig efter navneordet. <b>${esc(base)}-</b> (type -${esc(a.type)}) `+
-               `i <b>${esc(genderLabel(n.g))} ental</b> → <b>${esc(adjF)}</b>.`
+               `i <b>${esc(genderLabel(n.g))} ${esc(tal)}</b> → <b>${esc(adjF)}</b>.`
         };
       },
       target: ()=>{
-        const cell = $(`a-${a.type}-${n.g}-sg`);
+        const cell = $(`a-${a.type}-${n.g}-${plural?"pl":"sg"}`);
         return {cell, row: cell ? cell.parentElement : null};
       }
     });
@@ -505,30 +542,34 @@ function render(){
     card.className = "source-card";
     wrap.appendChild(card);
 
-    function show(){
+    // bubble = the source card (shown on hover); highlights tables WITHOUT scrolling
+    function showBubble(){
       const data = tk.card();
       card.innerHTML = `<div class="sc-head">${data.title}</div>${data.mini}<div class="sc-note">${data.note}</div>`;
-      // hide siblings
       document.querySelectorAll(".source-card.show").forEach(c=>c.classList.remove("show"));
       document.querySelectorAll(".token.active").forEach(t=>t.classList.remove("active"));
       card.classList.add("show");
       el.classList.add("active");
-      traceInTables(tk.target());
+      traceInTables(tk.target(), false); // highlight only — no scroll on hover
     }
-    function hide(){
+    function hideBubble(){
       card.classList.remove("show");
       el.classList.remove("active");
     }
+    // move = scroll the full table to the source cell (only on click)
+    function moveToTable(){
+      if(!card.classList.contains("show")) showBubble();
+      traceInTables(tk.target(), true); // highlight + smooth scroll
+    }
 
-    // click toggles the source card + table trace (no hover, so the page only
-    // scrolls when you deliberately click a word)
-    el.addEventListener("click", (e)=>{
-      e.stopPropagation();
-      if(card.classList.contains("show")) hide(); else show();
-    });
+    // HOVER → bubble · CLICK → move (scroll tables)
+    el.addEventListener("mouseenter", showBubble);
+    el.addEventListener("mouseleave", hideBubble);
+    el.addEventListener("focus", showBubble);
+    el.addEventListener("blur", hideBubble);
+    el.addEventListener("click", (e)=>{ e.stopPropagation(); moveToTable(); });
     el.addEventListener("keydown", (e)=>{
-      if(e.key==="Enter" || e.key===" "){ e.preventDefault();
-        if(card.classList.contains("show")) hide(); else show(); }
+      if(e.key==="Enter" || e.key===" "){ e.preventDefault(); moveToTable(); }
     });
 
     box.appendChild(wrap);
@@ -561,7 +602,7 @@ document.addEventListener("click", ()=>{
   document.querySelectorAll(".token.active").forEach(t=>t.classList.remove("active"));
 });
 
-["subject","verb","noun","adj"].forEach(id=> $(id).addEventListener("change", render));
+["subject","verb","noun","adj","form"].forEach(id=> $(id).addEventListener("change", render));
 render();
 </script>
 </body>
