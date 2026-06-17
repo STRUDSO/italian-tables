@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab · Reverse-klik – Sætningsbyggeren</title>
+<style>
+  :root{
+    --bg:#faf7f0; --ink:#2b2b2b; --line:#d8cfbc;
+    --green:#2e7d4f; --green-bg:#e7f3ea;
+    --blue:#2b5d8a; --blue-bg:#e6eef6;
+    --red:#b5443a; --red-bg:#f7e7e5;
+    --amber:#9a6b1e; --amber-bg:#f6eed9;
+    --hl:#ffe9a8; --hl-edge:#e6a700;
+    --shadow:0 2px 10px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1240px; margin:0 auto; padding:24px 18px 80px}
+  header h1{margin:0 0 4px; font-size:2rem; letter-spacing:-.5px}
+  header p{margin:0; color:#6b6354}
+  .protobadge{display:inline-block; background:var(--amber-bg); color:var(--amber); border:1px solid #e3d2a4;
+    font-size:.78rem; font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:8px; letter-spacing:.3px}
+  h2{margin:42px 0 6px; font-size:1.4rem; border-bottom:2px solid var(--line); padding-bottom:6px}
+  h2 .da{color:#8a8170; font-weight:400; font-size:1rem}
+  .lead{color:#5c5547; max-width:70ch}
+  table{border-collapse:collapse; width:100%; background:#fff; box-shadow:var(--shadow); border-radius:10px; overflow:hidden; margin:16px 0}
+  caption{caption-side:top; text-align:left; font-weight:600; padding:0 0 8px; color:#6b6354}
+  th,td{border:1px solid var(--line); padding:9px 11px; text-align:left; font-size:.96rem; transition:background .25s, box-shadow .25s}
+  thead th{background:#f1ebdd}
+  tbody th{background:#f7f3ea; font-weight:600; white-space:nowrap}
+  .da-cell{color:#9a927f; font-size:.82rem; display:block}
+  .end{font-weight:700; font-variant:small-caps}
+  .are{color:var(--green)} .ere{color:var(--blue)} .ire{color:var(--red)}
+  .ex{font-style:italic; color:#444}
+  .fem{background:var(--red-bg)} .masc{background:var(--blue-bg)} .masc2{background:var(--amber-bg)}
+  .tag{display:inline-block; font-size:.72rem; padding:1px 7px; border-radius:20px; vertical-align:middle; margin-left:6px}
+  .tag.f{background:var(--red-bg); color:var(--red)}
+  .tag.m{background:var(--blue-bg); color:var(--blue)}
+  .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:14px 0; box-shadow:var(--shadow)}
+
+  /* ---- highlight from builder ---- */
+  .hl{ background:var(--hl) !important; box-shadow:inset 0 0 0 2px var(--hl-edge); position:relative; }
+  .hl-row > th, .hl-row > td{ background:#fff7e0; }
+
+  /* ---- builder (now on top, sticky) ---- */
+  .builder{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px 20px; margin:10px 0 6px;
+    position:sticky; top:0; z-index:20;
+  }
+  .row{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end}
+  .field{display:flex; flex-direction:column; gap:4px; flex:1 1 160px; min-width:150px}
+  .field label{font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; color:#8a8170}
+  .field label .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle}
+  .dot-p{background:#7a5cc0} .dot-v{background:var(--green)} .dot-n{background:var(--blue)} .dot-a{background:var(--amber)}
+  select{font-size:1rem; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:#faf7f0; width:100%}
+  .output{margin-top:18px; padding:16px 18px; background:var(--green-bg); border-radius:10px; border:1px solid #cfe3d6}
+  .output .it{font-size:1.7rem; font-weight:700; color:var(--green)}
+  .output .gloss{color:#5c5547; margin-top:4px}
+  .output .note{color:#7a7263; font-size:.85rem; margin-top:8px}
+  .pill{display:inline-block; padding:2px 8px; border-radius:6px; background:#fff; border:1px solid var(--line); margin:0 2px}
+  .hint{color:#9a927f; font-size:.82rem; margin:6px 2px 0}
+
+  /* ---- FOCUSED SLICE STRIP (Prototype A) ---- */
+  .slices{
+    display:flex; flex-wrap:wrap; gap:14px; margin:8px 0 4px; align-items:stretch;
+  }
+  .slice{
+    flex:1 1 240px; min-width:220px;
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    box-shadow:var(--shadow); padding:12px 14px; display:flex; flex-direction:column;
+  }
+  .slice-head{
+    font-size:.74rem; text-transform:uppercase; letter-spacing:.5px; color:#8a8170;
+    display:flex; align-items:center; gap:6px; margin-bottom:8px;
+  }
+  .slice-head .dot{display:inline-block; width:9px; height:9px; border-radius:50%}
+  .slice-sub{font-weight:700; color:var(--ink); text-transform:none; letter-spacing:0; font-size:.9rem}
+  .mini{border-collapse:collapse; width:100%; box-shadow:none; margin:0; border-radius:8px; overflow:hidden}
+  .mini th, .mini td{border:1px solid var(--line); padding:5px 8px; font-size:.85rem}
+  .mini thead th{background:#f1ebdd; text-align:center; font-size:.78rem}
+  .mini tbody th{background:#f7f3ea; font-weight:600; white-space:nowrap; text-align:left}
+  .mini .mini-hl{ background:var(--hl); box-shadow:inset 0 0 0 2px var(--hl-edge); font-weight:700; }
+  .mini-zoom{font-size:.74rem; color:#9a927f; margin-top:8px; display:flex; align-items:center; gap:5px}
+  .strip-caption{color:#9a927f; font-size:.82rem; margin:14px 2px 4px}
+
+  /* ---- REVERSE-CLICK (Lab) ---- */
+  .clickable{ cursor:pointer; }
+  .clickable:hover{ background:#fbf3d8 !important; }
+  tr.clickable:hover > th, tr.clickable:hover > td{ background:#fbf3d8; }
+  @keyframes clickpulse{
+    0%{ box-shadow:inset 0 0 0 3px var(--hl-edge); background:#ffd866; }
+    100%{ box-shadow:inset 0 0 0 2px var(--hl-edge); }
+  }
+  .click-flash{ animation:clickpulse .55s ease-out; }
+  tr.click-flash > th, tr.click-flash > td{ animation:clickpulse .55s ease-out; }
+  .click-tip{
+    color:var(--amber); background:var(--amber-bg); border:1px solid #e3d2a4;
+    border-radius:8px; padding:8px 12px; font-size:.85rem; margin:14px 2px 4px; display:inline-block;
+  }
+
+  .disclaimer{margin:24px 0 6px; background:#fdf6e3; border:1px solid #ecdca8; border-left:5px solid #e0b500;
+    border-radius:10px; padding:14px 18px; color:#5c5128; font-size:.9rem; line-height:1.6}
+  .disclaimer strong{color:#7a5a00}
+  footer{margin-top:50px; color:#9a927f; font-size:.82rem; text-align:center}
+  @media(max-width:640px){ header h1{font-size:1.5rem} .builder{position:static} .slice{flex:1 1 100%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p style="margin:0 0 10px"><a href="../../" style="color:#8a8170;text-decoration:none;font-size:.85rem">← Galleri</a></p>
+  <span class="protobadge">🧪 Lab · Reverse-klik</span>
+  <h1>Italiensk 🇮🇹 – Sætningsbyggeren</h1>
+  <p>Byg en sætning foroven. Lige under får du et <em>fokuseret udsnit</em> af hver tabel – og længere nede ser du de fulde tabeller med de samme felter markeret med gult. <strong>Nyt i denne lab:</strong> du kan også klikke direkte i tabellerne for at ændre sætningen.</p>
+</header>
+
+<!-- ============ SÆTNINGSBYGGER (TOP) ============ -->
+<div class="builder">
+  <div class="row">
+    <div class="field">
+      <label><span class="dot dot-p"></span>Person</label>
+      <select id="subject"></select>
+    </div>
+    <div class="field">
+      <label><span class="dot dot-v"></span>Udsagnsord</label>
+      <select id="verb"></select>
+    </div>
+    <div class="field">
+      <label><span class="dot dot-n"></span>Form</label>
+      <select id="form"></select>
+    </div>
+    <div class="field">
+      <label><span class="dot dot-n"></span>Navneord</label>
+      <select id="noun"></select>
+    </div>
+    <div class="field">
+      <label><span class="dot dot-a"></span>Tillægsord</label>
+      <select id="adj"></select>
+    </div>
+  </div>
+
+  <div class="output">
+    <div class="it" id="out-it">…</div>
+    <div class="gloss" id="out-da">…</div>
+    <div class="note" id="out-note"></div>
+  </div>
+  <p class="hint">↓ Fokuseret udsnit nedenfor – og fulde tabeller længere nede (markeret med gult).</p>
+</div>
+
+<!-- ============ FOKUSERET UDSNIT (Prototype A) ============ -->
+<p class="strip-caption">🔍 Fokuseret udsnit – kun de relevante dele af tabellerne for dit valg:</p>
+<div class="slices">
+
+  <!-- Verb slice -->
+  <div class="slice">
+    <div class="slice-head"><span class="dot dot-v"></span>Udsagnsord
+      <span class="slice-sub" id="slice-v-sub"></span></div>
+    <table class="mini"><tbody id="slice-v-body"></tbody></table>
+    <div class="mini-zoom">↘ uddrag af Udsagnsord</div>
+  </div>
+
+  <!-- Noun slice -->
+  <div class="slice">
+    <div class="slice-head"><span class="dot dot-n"></span>Navneord & artikel
+      <span class="slice-sub" id="slice-n-sub"></span></div>
+    <table class="mini">
+      <thead><tr><th>Type</th><th>Ubestemt</th><th>Bestemt ental</th><th>Flertal</th></tr></thead>
+      <tbody id="slice-n-body"></tbody>
+    </table>
+    <div class="mini-zoom">↘ uddrag af Navneord &amp; artikler</div>
+  </div>
+
+  <!-- Adjective slice -->
+  <div class="slice">
+    <div class="slice-head"><span class="dot dot-a"></span>Tillægsord
+      <span class="slice-sub" id="slice-a-sub"></span></div>
+    <table class="mini">
+      <thead><tr><th>hankøn ental</th><th>hunkøn ental</th><th>hankøn flertal</th><th>hunkøn flertal</th></tr></thead>
+      <tbody id="slice-a-body"></tbody>
+    </table>
+    <div class="mini-zoom">↘ uddrag af tillægsord-tabellen</div>
+  </div>
+
+</div>
+
+<p class="click-tip">💡 Klik på en celle i tabellerne for at ændre sætningen ovenfor.</p>
+
+<div class="disclaimer">
+  <strong>⚠️ Bemærk – sætningerne giver ikke nødvendigvis mening!</strong>
+  Formålet er ikke at lave rigtige udsagn, men at vise <strong>hvordan en italiensk sætning
+  konstrueres</strong>: hvordan person, udsagnsord, artikel, navneord og tillægsord bøjes og
+  passer sammen efter reglerne. Tænk på det som et <strong>byggesæt for grammatik</strong>. 🙂
+</div>
+
+<!-- ============ TABEL 1: UDSAGNSORD ============ -->
+<h2>Udsagnsord <span class="da">(ita: i verbi) · bøjning i nutid (presente)</span></h2>
+<table>
+  <caption>Regelmæssig nutid · endelser og eksempler</caption>
+  <thead>
+    <tr>
+      <th>Person</th>
+      <th>Pronomen</th>
+      <th class="are">-are <span class="da">(parlare = tale)</span></th>
+      <th class="ere">-ere <span class="da">(prendere = tage)</span></th>
+      <th class="ire">-ire <span class="da">(dormire = sove)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th>jeg</th><td>io</td>
+      <td id="v-0-are"><span class="end are">-o</span> · <span class="ex">parlo</span></td>
+      <td id="v-0-ere"><span class="end ere">-o</span> · <span class="ex">prendo</span></td>
+      <td id="v-0-ire"><span class="end ire">-o</span> · <span class="ex">dormo</span></td></tr>
+    <tr><th>du</th><td>tu</td>
+      <td id="v-1-are"><span class="end are">-i</span> · <span class="ex">parli</span></td>
+      <td id="v-1-ere"><span class="end ere">-i</span> · <span class="ex">prendi</span></td>
+      <td id="v-1-ire"><span class="end ire">-i</span> · <span class="ex">dormi</span></td></tr>
+    <tr><th>han / hun / De</th><td>lui / lei / Lei</td>
+      <td id="v-2-are"><span class="end are">-a</span> · <span class="ex">parla</span></td>
+      <td id="v-2-ere"><span class="end ere">-e</span> · <span class="ex">prende</span></td>
+      <td id="v-2-ire"><span class="end ire">-e</span> · <span class="ex">dorme</span></td></tr>
+    <tr><th>vi</th><td>noi</td>
+      <td id="v-3-are"><span class="end are">-iamo</span> · <span class="ex">parliamo</span></td>
+      <td id="v-3-ere"><span class="end ere">-iamo</span> · <span class="ex">prendiamo</span></td>
+      <td id="v-3-ire"><span class="end ire">-iamo</span> · <span class="ex">dormiamo</span></td></tr>
+    <tr><th>I</th><td>voi</td>
+      <td id="v-4-are"><span class="end are">-ate</span> · <span class="ex">parlate</span></td>
+      <td id="v-4-ere"><span class="end ere">-ete</span> · <span class="ex">prendete</span></td>
+      <td id="v-4-ire"><span class="end ire">-ite</span> · <span class="ex">dormite</span></td></tr>
+    <tr><th>de</th><td>loro</td>
+      <td id="v-5-are"><span class="end are">-ano</span> · <span class="ex">parlano</span></td>
+      <td id="v-5-ere"><span class="end ere">-ono</span> · <span class="ex">prendono</span></td>
+      <td id="v-5-ire"><span class="end ire">-ono</span> · <span class="ex">dormono</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ============ TABEL 2: NAVNEORD + ARTIKLER ============ -->
+<h2>Navneord &amp; artikler <span class="da">(ita: i nomi &amp; gli articoli) · køn, ubestemt/bestemt, ental/flertal</span></h2>
+<table id="noun-table">
+  <caption>Mønstre for artikler</caption>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Ubestemt <span class="da">(en/et)</span></th>
+      <th>Bestemt ental <span class="da">(-en/-et)</span></th>
+      <th>Flertal <span class="da">(bestemt)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="fem" data-g="f" data-t="cons"><th>Hunkøn <span class="tag f">f</span></th>
+      <td>una casa <span class="da-cell">et hus</span></td>
+      <td class="def-sg">la casa</td>
+      <td>le case</td></tr>
+    <tr class="fem" data-g="f" data-t="vowel"><th>Hunkøn, vokal</th>
+      <td>un’arancia <span class="da-cell">en appelsin</span></td>
+      <td class="def-sg">l’arancia</td>
+      <td>le arance</td></tr>
+    <tr class="masc" data-g="m" data-t="cons"><th>Hankøn <span class="tag m">m</span></th>
+      <td>un fiore <span class="da-cell">en blomst</span></td>
+      <td class="def-sg">il fiore</td>
+      <td>i fiori</td></tr>
+    <tr class="masc" data-g="m" data-t="vowel"><th>Hankøn, vokal</th>
+      <td>un amico <span class="da-cell">en ven</span></td>
+      <td class="def-sg">l’amico</td>
+      <td>gli amici</td></tr>
+    <tr class="masc2" data-g="m" data-t="special"><th>Hankøn: s+kons., z, ps, gn</th>
+      <td>uno studente <span class="da-cell">en studerende</span></td>
+      <td class="def-sg">lo studente</td>
+      <td>gli studenti</td></tr>
+    <tr class="masc2" data-g="m" data-t="special2"><th>… flere af samme</th>
+      <td>uno scialle / sbaglio / zaino / zio</td>
+      <td class="def-sg">lo scialle / sbaglio / zaino / zio</td>
+      <td>gli scialli / sbagli / zaini / zii</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ NAVNEORD ============ -->
+<h2>Navneord <span class="da">(ita: i nomi) · køn &amp; flertal</span></h2>
+<p class="lead">Hvert navneord har køn – <span class="tag m">hankøn</span> eller
+<span class="tag f">hunkøn</span> – som regel afsløret af endelsen:</p>
+<table>
+  <caption>Endelse · typisk køn · flertal</caption>
+  <thead>
+    <tr><th>Endelse</th><th>Typisk køn</th><th>Ental (eksempel)</th><th>Flertal</th></tr>
+  </thead>
+  <tbody>
+    <tr id="nend-o"><th>-o</th>
+      <td><span class="tag m">hankøn</span></td>
+      <td>il libr<b>o</b> <span class="da-cell">bogen</span></td>
+      <td>-o → -i · i libr<b>i</b></td></tr>
+    <tr id="nend-a"><th>-a</th>
+      <td><span class="tag f">hunkøn</span></td>
+      <td>la cas<b>a</b> <span class="da-cell">huset</span></td>
+      <td>-a → -e · le cas<b>e</b></td></tr>
+    <tr id="nend-e"><th>-e</th>
+      <td>hankøn <em>el.</em> hunkøn <span class="da-cell">læres udenad</span></td>
+      <td>il fior<b>e</b> (m) / la nott<b>e</b> (f)</td>
+      <td>-e → -i · i fior<b>i</b> / le nott<b>i</b></td></tr>
+  </tbody>
+</table>
+
+<!-- ============ TILLÆGSORD ============ -->
+<h2>Tillægsord <span class="da">(ita: gli aggettivi) · bøjning efter køn &amp; tal</span></h2>
+<p class="lead">Tillægsord (adjektiver) <strong>retter sig efter navneordet</strong> i køn og tal.
+Som regel står de <em>efter</em> navneordet: <span class="ex">una casa rossa</span> (et rødt hus).</p>
+<table id="adj-table">
+  <caption>Bøjning efter køn og tal</caption>
+  <thead><tr><th>Type</th><th>hankøn ental</th><th>hunkøn ental</th><th>hankøn flertal</th><th>hunkøn flertal</th></tr></thead>
+  <tbody>
+    <tr><th>på <strong>-o</strong> (rosso = rød)</th>
+      <td id="a-o-m-sg">ross<b>o</b></td><td id="a-o-f-sg">ross<b>a</b></td>
+      <td id="a-o-m-pl">ross<b>i</b></td><td id="a-o-f-pl">ross<b>e</b></td></tr>
+    <tr><th>på <strong>-e</strong> (grande = stor)</th>
+      <td id="a-e-m-sg">grand<b>e</b></td><td id="a-e-f-sg">grand<b>e</b></td>
+      <td id="a-e-m-pl">grand<b>i</b></td><td id="a-e-f-pl">grand<b>i</b></td></tr>
+  </tbody>
+</table>
+<p class="da" style="margin:6px 2px 0">Bemærk: tillægsord på <strong>-e</strong> skelner kun mellem ental og flertal, ikke køn.</p>
+
+<footer>🧪 Eksperimentel lab-prototype · “Reverse-klik” – klik i tabellerne for at bygge sætningen baglæns. Bøjningerne følger de to håndskrevne tabeller. Buono studio! 🇮🇹</footer>
+
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+const subjects = [
+  {it:"Io",  da:"Jeg", p:0},
+  {it:"Tu",  da:"Du",  p:1},
+  {it:"Lui", da:"Han", p:2},
+  {it:"Lei", da:"Hun", p:2},
+  {it:"Noi", da:"Vi",  p:3},
+  {it:"Voi", da:"I",   p:4},
+  {it:"Loro",da:"De",  p:5},
+];
+const endings = {
+  are:["o","i","a","iamo","ate","ano"],
+  ere:["o","i","e","iamo","ete","ono"],
+  ire:["o","i","e","iamo","ite","ono"],
+};
+const verbs = [
+  {inf:"parlare",  stem:"parl",  g:"are", da:"taler"},
+  {inf:"comprare", stem:"compr", g:"are", da:"køber"},
+  {inf:"prendere", stem:"prend", g:"ere", da:"tager"},
+  {inf:"vedere",   stem:"ved",   g:"ere", da:"ser"},
+  {inf:"dormire",  stem:"dorm",  g:"ire", da:"sover"},
+  {inf:"sentire",  stem:"sent",  g:"ire", da:"hører"},
+];
+// row = the Tabel-2 row this noun demonstrates (data-t value)
+const nouns = [
+  {sg:"casa",     pl:"case",     g:"f", t:"cons",    row:"cons",    da:"hus",        daPl:"huse"},
+  {sg:"arancia",  pl:"arance",   g:"f", t:"vowel",   row:"vowel",   da:"appelsin",   daPl:"appelsiner"},
+  {sg:"fiore",    pl:"fiori",    g:"m", t:"cons",    row:"cons",    da:"blomst",     daPl:"blomster"},
+  {sg:"amico",    pl:"amici",    g:"m", t:"vowel",   row:"vowel",   da:"ven",        daPl:"venner"},
+  {sg:"studente", pl:"studenti", g:"m", t:"special", row:"special", da:"studerende", daPl:"studerende"},
+  {sg:"libro",    pl:"libri",    g:"m", t:"cons",    row:"cons",    da:"bog",        daPl:"bøger"},
+];
+/* the three forms = the three columns of Tabel 2 */
+const forms = [
+  {key:"ubestemt", col:0, plural:false, label:"Ubestemt ental (un/una)"},
+  {key:"bestemt",  col:1, plural:false, label:"Bestemt ental (il/la)"},
+  {key:"flertal",  col:2, plural:true,  label:"Flertal (i/le/gli)"},
+];
+const adjs = [
+  {type:"none", da:""},
+  {type:"o", base:"ross",  da:"rød"},
+  {type:"o", base:"piccol",da:"lille"},
+  {type:"o", base:"bell",  da:"smuk"},
+  {type:"e", base:"grand", da:"stor"},
+  {type:"e", base:"verd",  da:"grøn"},
+];
+
+// Pronomen labels & person labels matching Tabel 1 rows
+const personLabels = ["jeg","du","han / hun / De","vi","I","de"];
+const pronouns     = ["io","tu","lui / lei / Lei","noi","voi","loro"];
+// example infinitive shown in each verb-group header (matches Tabel 1)
+const groupExample = {are:"parlare", ere:"prendere", ire:"dormire"};
+const verbColor    = {are:"are", ere:"ere", ire:"ire"};
+
+/* ---------- LOGIC ---------- */
+function definiteArticle(n){
+  if(n.g==="f") return (n.t==="vowel") ? "l’" : "la";
+  if(n.t==="vowel")   return "l’";
+  if(n.t==="special") return "lo";
+  return "il";
+}
+function indefiniteArticle(n){            // un / una / un’ / uno
+  if(n.g==="f") return (n.t==="vowel") ? "un’" : "una";
+  if(n.t==="special") return "uno";
+  return "un";                            // m cons + m vowel both take "un"
+}
+function pluralArticle(n){                // bestemt flertal: le / i / gli
+  if(n.g==="f") return "le";
+  return (n.t==="cons") ? "i" : "gli";    // vowel & special → gli
+}
+/* pick article for the chosen form */
+function articleFor(n, form){
+  if(form.key==="ubestemt") return indefiniteArticle(n);
+  if(form.key==="flertal")  return pluralArticle(n);
+  return definiteArticle(n);
+}
+const joinArt = (art,w)=> art.endsWith("’") ? art+w : art+" "+w;
+function adjForm(a, gender, plural){
+  if(a.type==="none") return "";
+  if(a.type==="o"){
+    if(!plural) return a.base + (gender==="m"?"o":"a");
+    return a.base + (gender==="m"?"i":"e");
+  }
+  return a.base + (plural ? "i" : "e");    // e-type: only number matters
+}
+
+/* ---------- UI ---------- */
+const $ = id=>document.getElementById(id);
+subjects.forEach((s,i)=> $("subject").add(new Option(`${s.it} (${s.da.toLowerCase()})`, i)));
+verbs.forEach((v,i)=> $("verb").add(new Option(`${v.inf} – ${v.da}`, i)));
+nouns.forEach((n,i)=> $("noun").add(new Option(`${n.sg} – ${n.da}`, i)));
+adjs.forEach((a,i)=> $("adj").add(new Option(a.type==="none"?"(intet)":`${a.base}… – ${a.da}`, i)));
+forms.forEach((f,i)=> $("form").add(new Option(f.label, i)));
+$("adj").selectedIndex = 1;
+$("form").selectedIndex = 1; // bestemt ental as default
+
+function clearHl(){
+  document.querySelectorAll(".hl").forEach(e=>e.classList.remove("hl"));
+  document.querySelectorAll(".hl-row").forEach(e=>e.classList.remove("hl-row"));
+}
+
+/* ---------- FOCUSED SLICES (Prototype A) ---------- */
+function renderVerbSlice(s, v){
+  // header: group + chosen verb infinitive
+  $("slice-v-sub").innerHTML =
+    `<span class="${verbColor[v.g]}">-${v.g}</span> · ${v.inf}`;
+  // single relevant verb-group column, 6 rows, picked person highlighted
+  const body = $("slice-v-body");
+  body.innerHTML = "";
+  for(let p=0; p<6; p++){
+    const tr = document.createElement("tr");
+    const conj = v.stem + endings[v.g][p];
+    const isPicked = (p === s.p);
+    tr.innerHTML =
+      `<th>${pronouns[p]}</th>` +
+      `<td class="${isPicked?'mini-hl':''}">` +
+      `<span class="end ${verbColor[v.g]}">-${endings[v.g][p]}</span> · <span class="ex">${conj}</span></td>`;
+    body.appendChild(tr);
+  }
+}
+
+function renderNounSlice(n, form){
+  // grab the matching full-table row and clone its cells
+  const src = document.querySelector(`#noun-table tr[data-g="${n.g}"][data-t="${n.row}"]`);
+  const typeLabel = src.querySelector("th").textContent.trim();
+  const cells = src.querySelectorAll("td");
+  const nounWord = form.plural ? n.pl : n.sg;
+  $("slice-n-sub").textContent = `${nounWord} – ${form.plural ? n.daPl : n.da}`;
+  const body = $("slice-n-body");
+  const cellTxt = c => c.textContent.replace(/\s+/g,' ').trim();
+  const td = (i)=> `<td class="${i===form.col?'mini-hl':''}">${cellTxt(cells[i])}</td>`;
+  body.innerHTML =
+    `<tr>` +
+    `<th>${typeLabel}</th>` +
+    td(0) + td(1) + td(2) +
+    `</tr>`;
+}
+
+function renderAdjSlice(a, n, plural){
+  const body = $("slice-a-body");
+  if(a.type==="none"){
+    $("slice-a-sub").textContent = "(intet valgt)";
+    body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#9a927f">Intet tillægsord</td></tr>`;
+    return;
+  }
+  $("slice-a-sub").innerHTML = `${a.base}… – ${a.da} (på -${a.type})`;
+  // forms from the full adj-table row for this type
+  const cells = {
+    "m-sg": $(`a-${a.type}-m-sg`).innerHTML,
+    "f-sg": $(`a-${a.type}-f-sg`).innerHTML,
+    "m-pl": $(`a-${a.type}-m-pl`).innerHTML,
+    "f-pl": $(`a-${a.type}-f-pl`).innerHTML,
+  };
+  // the form actually used: noun's gender + chosen number
+  const usedKey = `${n.g}-${plural?"pl":"sg"}`;
+  const cell = (k)=> `<td class="${k===usedKey?'mini-hl':''}">${cells[k]}</td>`;
+  body.innerHTML = `<tr>${cell("m-sg")}${cell("f-sg")}${cell("m-pl")}${cell("f-pl")}</tr>`;
+}
+
+function render(){
+  const s = subjects[$("subject").value];
+  const v = verbs[$("verb").value];
+  const n = nouns[$("noun").value];
+  const a = adjs[$("adj").value];
+  const form = forms[$("form").value];
+  const plural = form.plural;
+
+  const verbForm = v.stem + endings[v.g][s.p];
+  const art = articleFor(n, form);
+  const nounWord = plural ? n.pl : n.sg;
+  const nounDa = plural ? n.daPl : n.da;
+  const adjF = adjForm(a, n.g, plural);
+  const nounPhrase = joinArt(art, nounWord) + (adjF ? " "+adjF : "");
+  const it = `${s.it} ${verbForm} ${nounPhrase}.`;
+
+  $("out-it").textContent = it;
+  $("out-da").textContent =
+    `${s.da} ${v.da} ${nounDa}${a.type!=="none"?` (`+a.da.toLowerCase()+`)`:''}.`;
+  $("out-note").innerHTML =
+    `Verbum: <span class="pill">${v.stem}</span>+<span class="pill">-${endings[v.g][s.p]}</span> `+
+    `&nbsp;·&nbsp; Artikel: <span class="pill">${art.trim()}</span> `+
+    `(${n.g==="f"?"hunkøn":"hankøn"}, ${n.t==="vowel"?"vokal":n.t==="special"?"s+kons./z":"kons."}${plural?", flertal":""})`+
+    ` &nbsp;·&nbsp; Navneord: <span class="pill">${nounWord}</span>${plural?` <span style="color:#8a8170">(${n.sg} → ${n.pl})</span>`:``}`+
+    (adjF? ` &nbsp;·&nbsp; Tillægsord: <span class="pill">${adjF}</span>`:``);
+
+  /* focused slices */
+  renderVerbSlice(s, v);
+  renderNounSlice(n, form);
+  renderAdjSlice(a, n, plural);
+
+  /* highlight source cells in the FULL tables (same cells as slices) */
+  clearHl();
+  // verb cell
+  const vc = $(`v-${s.p}-${v.g}`); if(vc) vc.classList.add("hl");
+  // noun-table row + the cell matching the chosen form's column
+  const nr = document.querySelector(`#noun-table tr[data-g="${n.g}"][data-t="${n.row}"]`);
+  if(nr){ nr.classList.add("hl-row"); const c=nr.querySelectorAll("td")[form.col]; if(c) c.classList.add("hl"); }
+  // ending-classification table row (Endelse · typisk køn): match the noun's final letter
+  const endRow = $(`nend-${n.sg.slice(-1)}`);
+  if(endRow){ endRow.classList.add("hl-row"); endRow.querySelectorAll("td")[form.plural?2:1]?.classList.add("hl"); }
+  // adjective cell (noun's gender + chosen number)
+  if(a.type!=="none"){ const ac=$(`a-${a.type}-${n.g}-${plural?"pl":"sg"}`); if(ac) ac.classList.add("hl"); }
+}
+
+["subject","verb","form","noun","adj"].forEach(id=> $(id).addEventListener("change", render));
+
+/* ====================================================================
+   REVERSE-CLICK (two-way binding) — Lab feature
+   Clicking a reference cell/row updates the matching dropdown(s) and
+   rebuilds the sentence. Inverse of the dropdown→table highlighting.
+   ==================================================================== */
+
+/* set a <select> by value (index into its data array) */
+function setSel(id, idx){ $(id).value = String(idx); }
+
+/* pick first subject index whose person === p */
+function subjectIndexForPerson(p){
+  const i = subjects.findIndex(s=>s.p===p);
+  return i<0 ? 0 : i;
+}
+/* pick first verb index of a given group (are/ere/ire) */
+function verbIndexForGroup(g){
+  const i = verbs.findIndex(v=>v.g===g);
+  return i<0 ? 0 : i;
+}
+/* pick first noun matching gender+type; fallback to gender; fallback first */
+function nounIndexForRow(g, t){
+  let i = nouns.findIndex(n=>n.g===g && n.row===t);
+  if(i<0) i = nouns.findIndex(n=>n.g===g);
+  return i<0 ? 0 : i;
+}
+/* pick first noun whose singular ends in a given letter */
+function nounIndexForEnding(letter){
+  const i = nouns.findIndex(n=>n.sg.slice(-1)===letter);
+  return i<0 ? 0 : i;
+}
+/* pick first adj index of a given type (o/e) */
+function adjIndexForType(type){
+  const i = adjs.findIndex(a=>a.type===type);
+  return i<0 ? 1 : i;
+}
+/* form index from a noun-table column (0/1/2) */
+function formIndexForCol(col){
+  const i = forms.findIndex(f=>f.col===col);
+  return i<0 ? 0 : i;
+}
+
+/* brief pulse on the clicked element */
+function flash(el){
+  if(!el) return;
+  el.classList.remove("click-flash");
+  // force reflow so the animation can re-trigger on rapid repeat clicks
+  void el.offsetWidth;
+  el.classList.add("click-flash");
+  el.addEventListener("animationend", ()=>el.classList.remove("click-flash"), {once:true});
+}
+
+/* ----- VERB table: cells v-{p}-{g} ----- */
+document.querySelectorAll('[id^="v-"]').forEach(cell=>{
+  const m = cell.id.match(/^v-(\d)-(are|ere|ire)$/);
+  if(!m) return;
+  const p = parseInt(m[1],10), g = m[2];
+  cell.classList.add("clickable");
+  cell.addEventListener("click", ()=>{
+    setSel("subject", subjectIndexForPerson(p));
+    // keep current verb if it's already in this group; otherwise switch
+    if(verbs[$("verb").value].g !== g) setSel("verb", verbIndexForGroup(g));
+    render();
+    flash(cell);
+  });
+});
+
+/* ----- NOUN+article table: clickable rows; column → form ----- */
+document.querySelectorAll('#noun-table tbody tr').forEach(row=>{
+  const g = row.getAttribute("data-g");
+  const t = row.getAttribute("data-t");
+  if(!g || !t) return;
+  // special2 row has no matching noun → fall back to special / gender
+  const tForLookup = (t==="special2") ? "special" : t;
+  row.classList.add("clickable");
+  const tds = row.querySelectorAll("td");
+  tds.forEach((td, col)=>{
+    td.addEventListener("click", ()=>{
+      setSel("noun", nounIndexForRow(g, tForLookup));
+      setSel("form", formIndexForCol(col));
+      render();
+      flash(td);
+    });
+  });
+});
+
+/* ----- ADJECTIVE table: cells a-{type}-{g}-{sg|pl} ----- */
+document.querySelectorAll('[id^="a-"]').forEach(cell=>{
+  const m = cell.id.match(/^a-(o|e)-(m|f)-(sg|pl)$/);
+  if(!m) return;
+  const type = m[1], plural = (m[3]==="pl");
+  cell.classList.add("clickable");
+  cell.addEventListener("click", ()=>{
+    setSel("adj", adjIndexForType(type));
+    // map to a form with the matching number; keep singular kind if already chosen
+    if(plural){
+      if(!forms[$("form").value].plural) setSel("form", formIndexForCol(2));
+    } else {
+      if(forms[$("form").value].plural) setSel("form", formIndexForCol(1)); // default to bestemt ental
+    }
+    render();
+    flash(cell);
+  });
+});
+
+/* ----- ENDELSE table: rows nend-o / nend-a / nend-e ----- */
+["o","a","e"].forEach(letter=>{
+  const row = $("nend-"+letter);
+  if(!row) return;
+  row.classList.add("clickable");
+  row.addEventListener("click", ()=>{
+    setSel("noun", nounIndexForEnding(letter));
+    render();
+    flash(row);
+  });
+});
+
+render();
+</script>
+</body>
+</html>
