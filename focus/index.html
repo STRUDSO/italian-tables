@@ -273,15 +273,15 @@
     <tr><th>Endelse</th><th>Typisk køn</th><th>Ental (eksempel)</th><th>Flertal</th></tr>
   </thead>
   <tbody>
-    <tr><th>-o</th>
+    <tr id="nend-o"><th>-o</th>
       <td><span class="tag m">hankøn</span></td>
       <td>il libr<b>o</b> <span class="da-cell">bogen</span></td>
       <td>-o → -i · i libr<b>i</b></td></tr>
-    <tr><th>-a</th>
+    <tr id="nend-a"><th>-a</th>
       <td><span class="tag f">hunkøn</span></td>
       <td>la cas<b>a</b> <span class="da-cell">huset</span></td>
       <td>-a → -e · le cas<b>e</b></td></tr>
-    <tr><th>-e</th>
+    <tr id="nend-e"><th>-e</th>
       <td>hankøn <em>el.</em> hunkøn <span class="da-cell">læres udenad</span></td>
       <td>il fior<b>e</b> (m) / la nott<b>e</b> (f)</td>
       <td>-e → -i · i fior<b>i</b> / le nott<b>i</b></td></tr>
@@ -507,6 +507,9 @@ function render(){
   // noun-table row + the cell matching the chosen form's column
   const nr = document.querySelector(`#noun-table tr[data-g="${n.g}"][data-t="${n.row}"]`);
   if(nr){ nr.classList.add("hl-row"); const c=nr.querySelectorAll("td")[form.col]; if(c) c.classList.add("hl"); }
+  // ending-classification table row (Endelse · typisk køn): match the noun's final letter
+  const endRow = $(`nend-${n.sg.slice(-1)}`);
+  if(endRow){ endRow.classList.add("hl-row"); endRow.querySelectorAll("td")[form.plural?2:1]?.classList.add("hl"); }
   // adjective cell (noun's gender + chosen number)
   if(a.type!=="none"){ const ac=$(`a-${a.type}-${n.g}-${plural?"pl":"sg"}`); if(ac) ac.classList.add("hl"); }
 }

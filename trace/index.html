@@ -254,15 +254,15 @@
     <tr><th>Endelse</th><th>Typisk køn</th><th>Ental (eksempel)</th><th>Flertal</th></tr>
   </thead>
   <tbody>
-    <tr><th>-o</th>
+    <tr id="nend-o"><th>-o</th>
       <td><span class="tag m">hankøn</span></td>
       <td>il libr<b>o</b> <span class="da-cell">bogen</span></td>
       <td>-o → -i · i libr<b>i</b></td></tr>
-    <tr><th>-a</th>
+    <tr id="nend-a"><th>-a</th>
       <td><span class="tag f">hunkøn</span></td>
       <td>la cas<b>a</b> <span class="da-cell">huset</span></td>
       <td>-a → -e · le cas<b>e</b></td></tr>
-    <tr><th>-e</th>
+    <tr id="nend-e"><th>-e</th>
       <td>hankøn <em>el.</em> hunkøn <span class="da-cell">læres udenad</span></td>
       <td>il fior<b>e</b> (m) / la nott<b>e</b> (f)</td>
       <td>-e → -i · i fior<b>i</b> / le nott<b>i</b></td></tr>
@@ -493,6 +493,12 @@ function render(){
     const cell = row ? row.querySelectorAll("td")[form.col] : null; // column = chosen form
     return {cell, row};
   };
+  /* ending-classification table (Endelse · typisk køn) row for this noun */
+  const endTarget = ()=>{
+    const row = $(`nend-${n.sg.slice(-1)}`);
+    const cell = row ? row.querySelectorAll("td")[form.plural?2:1] : null; // ental el. flertal kolonne
+    return {cell, row};
+  };
   /* article token */
   tokens.push({
     text: art.trim(), da:"", cls:"tk-n",
@@ -555,6 +561,7 @@ function render(){
     const vc = $(`v-${s.p}-${v.g}`);
     addHl({cell:vc, row: vc ? vc.parentElement : null});
     addHl(nounTarget());
+    addHl(endTarget());
     if(a.type!=="none" && adjF){
       const ac = $(`a-${a.type}-${n.g}-${plural?"pl":"sg"}`);
       addHl({cell:ac, row: ac ? ac.parentElement : null});
