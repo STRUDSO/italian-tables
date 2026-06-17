@@ -190,7 +190,6 @@
     <div class="note" id="out-note"></div>
   </div>
   <p class="hint">↓ Fokuseret udsnit nedenfor – og fulde tabeller længere nede (markeret med gult).</p>
-  <p class="combo-hint">💡 Hold musen over en menu for at se hvad den styrer i tabellerne – eller klik på en celle i tabellerne for at ændre sætningen.</p>
 </div>
 
 <!-- floating preview callout -->
@@ -487,6 +486,10 @@ function renderVerbSlice(s, v){
       `<th>${pronouns[p]}</th>` +
       `<td class="${isPicked?'mini-hl':''}">` +
       `<span class="end ${verbColor[v.g]}">-${endings[v.g][p]}</span> · <span class="ex">${conj}</span></td>`;
+    // clickable: choosing a row sets Person (the column already is the chosen verb's group)
+    const td = tr.querySelector("td");
+    td.classList.add("clickable");
+    td.addEventListener("click", ()=>{ setSel("subject", subjectIndexForPerson(p)); commit(); });
     body.appendChild(tr);
   }
 }
@@ -506,6 +509,11 @@ function renderNounSlice(n, form){
     `<th>${typeLabel}</th>` +
     td(0) + td(1) + td(2) +
     `</tr>`;
+  // clickable: choosing a column sets Form (the noun itself is already chosen)
+  body.querySelectorAll("td").forEach((cellEl, col)=>{
+    cellEl.classList.add("clickable");
+    cellEl.addEventListener("click", ()=>{ setSel("form", formIndexForCol(col)); commit(); });
+  });
 }
 
 function renderAdjSlice(a, n, plural){
@@ -527,6 +535,17 @@ function renderAdjSlice(a, n, plural){
   const usedKey = `${n.g}-${plural?"pl":"sg"}`;
   const cell = (k)=> `<td class="${k===usedKey?'mini-hl':''}">${cells[k]}</td>`;
   body.innerHTML = `<tr>${cell("m-sg")}${cell("f-sg")}${cell("m-pl")}${cell("f-pl")}</tr>`;
+  // clickable: gender follows the chosen noun, so a column only switches ental/flertal (Form)
+  const keys = ["m-sg","f-sg","m-pl","f-pl"];
+  body.querySelectorAll("td").forEach((cellEl, i)=>{
+    const isPlural = keys[i].endsWith("pl");
+    cellEl.classList.add("clickable");
+    cellEl.addEventListener("click", ()=>{
+      if(isPlural){ if(!forms[$("form").value].plural) setSel("form", formIndexForCol(2)); }
+      else { if(forms[$("form").value].plural) setSel("form", formIndexForCol(1)); }
+      commit();
+    });
+  });
 }
 
 function render(){
