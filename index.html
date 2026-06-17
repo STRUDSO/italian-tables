@@ -30,8 +30,13 @@
   .card .go{margin-top:10px;font-weight:600;color:var(--blue)}
   .swatch{font-size:1.8rem;margin-bottom:8px}
 
+  /* disclaimer */
+  .disclaimer{margin-top:40px;background:#fdf6e3;border:1px solid #ecdca8;border-left:5px solid #e0b500;
+    border-radius:10px;padding:16px 20px;color:#5c5128;font-size:.92rem;line-height:1.6}
+  .disclaimer strong{color:#7a5a00}
+
   /* open-source bar */
-  .ossbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:28px}
+  .ossbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-top:32px}
   .ghbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:.86rem;font-weight:600;
     color:#24292f;background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;padding:7px 13px;
     transition:background .15s, transform .12s}
@@ -63,21 +68,6 @@
     <p>Et lille værktøj til at bygge enkle italienske sætninger ud fra to håndskrevne tabeller
     (udsagnsord + navneord/artikler). Vælg person, form, navneord og tillægsord – og se
     <em>hvor hver del kommer fra</em>. Vælg en visning:</p>
-
-    <div class="ossbar">
-      <a class="ghbtn primary" href="https://github.com/STRUDSO/italian-tables" target="_blank" rel="noopener">
-        ⭐ Star</a>
-      <a class="ghbtn" href="https://github.com/STRUDSO/italian-tables/fork" target="_blank" rel="noopener">
-        🍴 Fork</a>
-      <a class="ghbtn" href="https://github.com/STRUDSO/italian-tables" target="_blank" rel="noopener">
-        &lt;&gt; Kildekode</a>
-      <a href="https://github.com/STRUDSO/italian-tables/stargazers" target="_blank" rel="noopener">
-        <img alt="GitHub stars" src="https://img.shields.io/github/stars/STRUDSO/italian-tables?style=flat&logo=github&color=2e7d4f"></a>
-      <a href="https://github.com/STRUDSO/italian-tables/network/members" target="_blank" rel="noopener">
-        <img alt="GitHub forks" src="https://img.shields.io/github/forks/STRUDSO/italian-tables?style=flat&logo=github"></a>
-      <a href="https://github.com/STRUDSO/italian-tables/blob/main/LICENSE" target="_blank" rel="noopener">
-        <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-    </div>
   </header>
 
   <div class="grid">
@@ -142,6 +132,30 @@
     </div>
     <p class="recipe-foot">Fra håndskrevne noter til en live læringsside – i dialog, ét skridt ad gangen. 🇮🇹</p>
   </section>
+
+  <div class="disclaimer">
+    <strong>⚠️ Bemærk – sætningerne giver ikke nødvendigvis mening!</strong>
+    Formålet er <em>ikke</em> at lave rigtige, meningsfulde udsagn, men at illustrere
+    <strong>hvordan en italiensk sætning konstrueres</strong>: hvordan person, udsagnsord, artikel,
+    navneord og tillægsord bøjes og passer sammen efter reglerne. Tænk på det som et
+    <strong>byggesæt for grammatik</strong> – det viser hvordan brikkerne hænger sammen,
+    ikke at “Tu compri gli amici piccoli” er noget man faktisk ville sige. 🙂
+  </div>
+
+  <div class="ossbar">
+    <a class="ghbtn primary" href="https://github.com/STRUDSO/italian-tables" target="_blank" rel="noopener">
+      ⭐ Star</a>
+    <a class="ghbtn" href="https://github.com/STRUDSO/italian-tables/fork" target="_blank" rel="noopener">
+      🍴 Fork</a>
+    <a class="ghbtn" href="https://github.com/STRUDSO/italian-tables" target="_blank" rel="noopener">
+      &lt;&gt; Kildekode</a>
+    <a href="https://github.com/STRUDSO/italian-tables/stargazers" target="_blank" rel="noopener">
+      <img alt="GitHub stars" src="https://img.shields.io/github/stars/STRUDSO/italian-tables?style=flat&logo=github&color=2e7d4f"></a>
+    <a href="https://github.com/STRUDSO/italian-tables/network/members" target="_blank" rel="noopener">
+      <img alt="GitHub forks" src="https://img.shields.io/github/forks/STRUDSO/italian-tables?style=flat&logo=github"></a>
+    <a href="https://github.com/STRUDSO/italian-tables/blob/main/LICENSE" target="_blank" rel="noopener">
+      <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  </div>
 
   <footer>Lavet som læringshjælp · Buono studio! 🇮🇹</footer>
 </div>

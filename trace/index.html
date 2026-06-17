@@ -103,6 +103,9 @@
   .legend span{display:inline-flex; align-items:center; gap:6px}
   .legend i{width:12px; height:12px; border-radius:4px; display:inline-block}
 
+  .disclaimer{margin:24px 0 6px; background:#fdf6e3; border:1px solid #ecdca8; border-left:5px solid #e0b500;
+    border-radius:10px; padding:14px 18px; color:#5c5128; font-size:.9rem; line-height:1.6}
+  .disclaimer strong{color:#7a5a00}
   footer{margin-top:50px; color:#9a927f; font-size:.82rem; text-align:center}
   @media(max-width:640px){ header h1{font-size:1.5rem} .builder{position:static} .token{font-size:1.25rem} }
 </style>
@@ -153,8 +156,15 @@
   </div>
 </div>
 
+<div class="disclaimer">
+  <strong>⚠️ Bemærk – sætningerne giver ikke nødvendigvis mening!</strong>
+  Formålet er ikke at lave rigtige udsagn, men at vise <strong>hvordan en italiensk sætning
+  konstrueres</strong>: hvordan person, udsagnsord, artikel, navneord og tillægsord bøjes og
+  passer sammen efter reglerne. Tænk på det som et <strong>byggesæt for grammatik</strong>. 🙂
+</div>
+
 <!-- ============ TABEL 1: UDSAGNSORD ============ -->
-<h2>Tabel 1 · Udsagnsord <span class="da">– bøjning i nutid (presente)</span></h2>
+<h2>Udsagnsord <span class="da">(ita: i verbi) · bøjning i nutid (presente)</span></h2>
 <table>
   <caption>Regelmæssig nutid · endelser og eksempler</caption>
   <thead>
@@ -195,7 +205,7 @@
 </table>
 
 <!-- ============ TABEL 2: NAVNEORD + ARTIKLER ============ -->
-<h2>Tabel 2 · Navneord & artikler <span class="da">– køn, ubestemt/bestemt, ental/flertal</span></h2>
+<h2>Navneord &amp; artikler <span class="da">(ita: i nomi &amp; gli articoli) · køn, ubestemt/bestemt, ental/flertal</span></h2>
 <table id="noun-table">
   <caption>Mønstre for artikler</caption>
   <thead>
@@ -235,37 +245,47 @@
 </table>
 
 <!-- ============ NAVNEORD ============ -->
-<h2>Om navneord <span class="da">– i nomi</span></h2>
-<div class="card">
-  <p><strong>Køn:</strong> Hvert navneord er enten <span class="tag m">hankøn</span> eller
-  <span class="tag f">hunkøn</span>. Tommelfingerregel:</p>
-  <ul>
-    <li>Ender på <strong>-o</strong> → ofte hankøn: <span class="ex">il libro</span> (bogen)</li>
-    <li>Ender på <strong>-a</strong> → ofte hunkøn: <span class="ex">la casa</span> (huset)</li>
-    <li>Ender på <strong>-e</strong> → kan være begge – skal læres udenad: <span class="ex">il fiore</span> (m), <span class="ex">la notte</span> (f)</li>
-  </ul>
-  <p><strong>Flertal:</strong> <span class="ex">-o → -i</span>, <span class="ex">-a → -e</span>,
-  <span class="ex">-e → -i</span>. Eks.: libro → libri, casa → case, fiore → fiori.</p>
-</div>
+<h2>Navneord <span class="da">(ita: i nomi) · køn &amp; flertal</span></h2>
+<p class="lead">Hvert navneord har køn – <span class="tag m">hankøn</span> eller
+<span class="tag f">hunkøn</span> – som regel afsløret af endelsen:</p>
+<table>
+  <caption>Endelse · typisk køn · flertal</caption>
+  <thead>
+    <tr><th>Endelse</th><th>Typisk køn</th><th>Ental (eksempel)</th><th>Flertal</th></tr>
+  </thead>
+  <tbody>
+    <tr><th>-o</th>
+      <td><span class="tag m">hankøn</span></td>
+      <td>il libr<b>o</b> <span class="da-cell">bogen</span></td>
+      <td>-o → -i · i libr<b>i</b></td></tr>
+    <tr><th>-a</th>
+      <td><span class="tag f">hunkøn</span></td>
+      <td>la cas<b>a</b> <span class="da-cell">huset</span></td>
+      <td>-a → -e · le cas<b>e</b></td></tr>
+    <tr><th>-e</th>
+      <td>hankøn <em>el.</em> hunkøn <span class="da-cell">læres udenad</span></td>
+      <td>il fior<b>e</b> (m) / la nott<b>e</b> (f)</td>
+      <td>-e → -i · i fior<b>i</b> / le nott<b>i</b></td></tr>
+  </tbody>
+</table>
 
 <!-- ============ TILLÆGSORD ============ -->
-<h2>Om tillægsord <span class="da">– gli aggettivi</span></h2>
-<div class="card">
-  <p>Tillægsord (adjektiver) <strong>retter sig efter navneordet</strong> i køn og tal.
-  Som regel står de <em>efter</em> navneordet: <span class="ex">una casa rossa</span> (et rødt hus).</p>
-  <table id="adj-table" style="box-shadow:none; margin:8px 0">
-    <thead><tr><th>Type</th><th>hankøn ental</th><th>hunkøn ental</th><th>hankøn flertal</th><th>hunkøn flertal</th></tr></thead>
-    <tbody>
-      <tr><th>på <strong>-o</strong> (rosso = rød)</th>
-        <td id="a-o-m-sg">ross<b>o</b></td><td id="a-o-f-sg">ross<b>a</b></td>
-        <td id="a-o-m-pl">ross<b>i</b></td><td id="a-o-f-pl">ross<b>e</b></td></tr>
-      <tr><th>på <strong>-e</strong> (grande = stor)</th>
-        <td id="a-e-m-sg">grand<b>e</b></td><td id="a-e-f-sg">grand<b>e</b></td>
-        <td id="a-e-m-pl">grand<b>i</b></td><td id="a-e-f-pl">grand<b>i</b></td></tr>
-    </tbody>
-  </table>
-  <p class="da" style="margin:0">Bemærk: tillægsord på <strong>-e</strong> skelner kun mellem ental og flertal, ikke køn.</p>
-</div>
+<h2>Tillægsord <span class="da">(ita: gli aggettivi) · bøjning efter køn &amp; tal</span></h2>
+<p class="lead">Tillægsord (adjektiver) <strong>retter sig efter navneordet</strong> i køn og tal.
+Som regel står de <em>efter</em> navneordet: <span class="ex">una casa rossa</span> (et rødt hus).</p>
+<table id="adj-table">
+  <caption>Bøjning efter køn og tal</caption>
+  <thead><tr><th>Type</th><th>hankøn ental</th><th>hunkøn ental</th><th>hankøn flertal</th><th>hunkøn flertal</th></tr></thead>
+  <tbody>
+    <tr><th>på <strong>-o</strong> (rosso = rød)</th>
+      <td id="a-o-m-sg">ross<b>o</b></td><td id="a-o-f-sg">ross<b>a</b></td>
+      <td id="a-o-m-pl">ross<b>i</b></td><td id="a-o-f-pl">ross<b>e</b></td></tr>
+    <tr><th>på <strong>-e</strong> (grande = stor)</th>
+      <td id="a-e-m-sg">grand<b>e</b></td><td id="a-e-f-sg">grand<b>e</b></td>
+      <td id="a-e-m-pl">grand<b>i</b></td><td id="a-e-f-pl">grand<b>i</b></td></tr>
+  </tbody>
+</table>
+<p class="da" style="margin:6px 2px 0">Bemærk: tillægsord på <strong>-e</strong> skelner kun mellem ental og flertal, ikke køn.</p>
 
 <footer>Prototype B · token lineage · bøjningerne følger de to håndskrevne tabeller. Buono studio! 🇮🇹</footer>
 
@@ -430,7 +450,7 @@ function render(){
     card: ()=>({
       title:`<span class="swatch" style="background:var(--purple)"></span>Person`,
       mini: miniTable(["Person","Pronomen"], [[s.da.toLowerCase(), s.it.toLowerCase()]], {r:0,c:1}),
-      note:`Subjektet bestemmer hvilken <b>række</b> i Tabel 1 verbets endelse hentes fra: <b>${esc(personLabel[s.p])}</b>.`
+      note:`Subjektet bestemmer hvilken <b>række</b> i Udsagnsord-tabellen verbets endelse hentes fra: <b>${esc(personLabel[s.p])}</b>.`
     }),
     target: ()=>{
       const cell = $(`v-${s.p}-${v.g}`);
@@ -455,7 +475,7 @@ function render(){
         [`-${endings[v.g][otherP]}`, `-${endings[otherG][otherP]}`],
       ];
       return {
-        title:`<span class="swatch" style="background:var(--green)"></span>Tabel 1 · endelse`,
+        title:`<span class="swatch" style="background:var(--green)"></span>Udsagnsord · endelse`,
         mini: miniTable([`-${v.g}`, `-${otherG}`], rows, {r:0,c:0}),
         note:`<b>${esc(v.stem)}</b> (stamme af <i>${esc(v.inf)}</i>) + endelsen <b>-${esc(ending)}</b> `+
              `for <b>${esc(personLabel[s.p])}</b> i gruppen <b>-${esc(v.g)}</b> → <b>${esc(verbForm)}</b>.`
@@ -477,7 +497,7 @@ function render(){
   tokens.push({
     text: art.trim(), da:"", cls:"tk-n",
     card: ()=>({
-      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · artikel (${esc(formColLabel.toLowerCase())})`,
+      title:`<span class="swatch" style="background:var(--blue)"></span>Navneord · artikel (${esc(formColLabel.toLowerCase())})`,
       mini: miniTable(["Ubestemt","Bestemt ental","Flertal"],
         [nounRowCells(n)], {r:0,c:form.col}),
       note:`Artikel <b>${esc(art.trim())}</b> (${esc(formColLabel.toLowerCase())}) vælges fordi <b>${esc(nounWord)}</b> er `+
@@ -489,7 +509,7 @@ function render(){
   tokens.push({
     text: nounWord, da:nounDa, cls:"tk-n",
     card: ()=>({
-      title:`<span class="swatch" style="background:var(--blue)"></span>Tabel 2 · navneord (${esc(plural?"flertal":"ental")})`,
+      title:`<span class="swatch" style="background:var(--blue)"></span>Navneord (${esc(plural?"flertal":"ental")})`,
       mini: miniTable(["Ubestemt","Bestemt ental","Flertal"],
         [nounRowCells(n)], {r:0,c:form.col}),
       note:`Navneordet <b>${esc(nounWord)}</b> (${esc(nounDa)}) er <b>${esc(genderLabel(n.g))}</b>`+
