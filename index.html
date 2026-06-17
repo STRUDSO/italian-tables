@@ -29,6 +29,30 @@
   .card .url{margin-top:12px;font-size:.8rem;color:#9a927f;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   .card .go{margin-top:10px;font-weight:600;color:var(--blue)}
   .swatch{font-size:1.8rem;margin-bottom:8px}
+
+  /* open-source bar */
+  .ossbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:28px}
+  .ghbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:.86rem;font-weight:600;
+    color:#24292f;background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;padding:7px 13px;
+    transition:background .15s, transform .12s}
+  .ghbtn:hover{background:#eef1f4;transform:translateY(-1px)}
+  .ghbtn.primary{background:#1f883d;border-color:#1a7f37;color:#fff}
+  .ghbtn.primary:hover{background:#1a7f37}
+  .ossbar img{height:20px;display:block}
+
+  /* recipe */
+  .recipe{margin-top:48px;background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:26px 28px;box-shadow:var(--shadow)}
+  .recipe h2{margin:0 0 4px;font-size:1.45rem}
+  .recipe-sub{margin:0 0 18px;color:#6b6354;font-size:.92rem}
+  .recipe-cols{display:grid;grid-template-columns:1fr 1.3fr;gap:28px}
+  .recipe h3{margin:0 0 8px;font-size:1rem;text-transform:uppercase;letter-spacing:.5px;color:#8a8170}
+  .recipe ul,.recipe ol{margin:0;padding-left:1.2em;color:#4a4538;font-size:.93rem}
+  .recipe li{margin-bottom:7px}
+  .recipe code{background:#f1ebdd;padding:1px 6px;border-radius:5px;font-size:.85em}
+  .recipe-foot{margin:20px 0 0;color:#6b6354;font-style:italic;font-size:.9rem}
+  @media(max-width:640px){ .recipe-cols{grid-template-columns:1fr;gap:20px} }
+
   footer{margin-top:50px;color:#9a927f;font-size:.82rem;text-align:center}
 </style>
 </head>
@@ -39,6 +63,21 @@
     <p>Et lille værktøj til at bygge enkle italienske sætninger ud fra to håndskrevne tabeller
     (udsagnsord + navneord/artikler). Vælg person, form, navneord og tillægsord – og se
     <em>hvor hver del kommer fra</em>. Vælg en visning:</p>
+
+    <div class="ossbar">
+      <a class="ghbtn primary" href="https://github.com/STRUDSO/italian-tables" target="_blank" rel="noopener">
+        ⭐ Star</a>
+      <a class="ghbtn" href="https://github.com/STRUDSO/italian-tables/fork" target="_blank" rel="noopener">
+        🍴 Fork</a>
+      <a class="ghbtn" href="https://github.com/STRUDSO/italian-tables" target="_blank" rel="noopener">
+        &lt;&gt; Kildekode</a>
+      <a href="https://github.com/STRUDSO/italian-tables/stargazers" target="_blank" rel="noopener">
+        <img alt="GitHub stars" src="https://img.shields.io/github/stars/STRUDSO/italian-tables?style=flat&logo=github&color=2e7d4f"></a>
+      <a href="https://github.com/STRUDSO/italian-tables/network/members" target="_blank" rel="noopener">
+        <img alt="GitHub forks" src="https://img.shields.io/github/forks/STRUDSO/italian-tables?style=flat&logo=github"></a>
+      <a href="https://github.com/STRUDSO/italian-tables/blob/main/LICENSE" target="_blank" rel="noopener">
+        <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+    </div>
   </header>
 
   <div class="grid">
@@ -62,6 +101,47 @@
       <span class="go">Åbn →</span>
     </a>
   </div>
+
+  <section class="recipe">
+    <h2>📒 Opskriften – sådan blev siden til</h2>
+    <p class="recipe-sub">En lille “recipe” for hvordan denne side opstod i samarbejde med
+    <strong>Claude Code (model: Opus 4.8)</strong>.</p>
+
+    <div class="recipe-cols">
+      <div>
+        <h3>Ingredienser</h3>
+        <ul>
+          <li>2 håndskrevne noter, fotograferet med telefonen (<code>.heic</code>):
+            <ul>
+              <li>Tabel 1 – udsagnsord bøjet i nutid (-are / -ere / -ire)</li>
+              <li>Tabel 2 – navneord & artikler (køn · ubestemt/bestemt · ental/flertal)</li>
+            </ul>
+          </li>
+          <li>1 idé: “brug tabellerne som hjælp til at bygge enkle italienske sætninger”</li>
+          <li>Claude Code · Opus 4.8 · GitHub Pages</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Fremgangsmåde</h3>
+        <ol>
+          <li><strong>Afleverede de to billeder</strong> og bad om en HTML-side med de to
+          tabeller plus afsnit om navneord og tillægsord.</li>
+          <li>Claude <strong>konverterede billederne</strong> (HEIC → PNG), aflæste den
+          håndskrevne tekst og <strong>renskrev begge tabeller</strong> digitalt.</li>
+          <li>Bad om en måde at <strong>bygge sætninger</strong> ud fra tabellerne →
+          en interaktiv “sætningsbygger”.</li>
+          <li>Ønskede at se <strong>hvor hver del kom fra</strong>; et lille
+          <strong>team af agenter</strong> lavede 3 prototyper af visualiseringen.</li>
+          <li>Finpudsede: highlights, <strong>hover viser, klik ruller</strong>, og en
+          <strong>Form-vælger</strong> (ubestemt/bestemt/flertal).</li>
+          <li>Valgte de to favoritter (<em>A</em> og <em>B</em>), <strong>udgav på
+          GitHub Pages</strong> med pæne URL’er <code>/focus/</code> og <code>/trace/</code>.</li>
+        </ol>
+      </div>
+    </div>
+    <p class="recipe-foot">Fra håndskrevne noter til en live læringsside – i dialog, ét skridt ad gangen. 🇮🇹</p>
+  </section>
 
   <footer>Lavet som læringshjælp · Buono studio! 🇮🇹</footer>
 </div>
