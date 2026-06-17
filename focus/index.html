@@ -493,6 +493,7 @@ function render(){
     `Verbum: <span class="pill">${v.stem}</span>+<span class="pill">-${endings[v.g][s.p]}</span> `+
     `&nbsp;·&nbsp; Artikel: <span class="pill">${art.trim()}</span> `+
     `(${n.g==="f"?"hunkøn":"hankøn"}, ${n.t==="vowel"?"vokal":n.t==="special"?"s+kons./z":"kons."}${plural?", flertal":""})`+
+    ` &nbsp;·&nbsp; Navneord: <span class="pill">${nounWord}</span>${plural?` <span style="color:#8a8170">(${n.sg} → ${n.pl})</span>`:``}`+
     (adjF? ` &nbsp;·&nbsp; Tillægsord: <span class="pill">${adjF}</span>`:``);
 
   /* focused slices */
