@@ -13,6 +13,7 @@
     --amber:#9a6b1e; --amber-bg:#f6eed9;
     --hl:#ffe9a8; --hl-edge:#e6a700;
     --shadow:0 2px 10px rgba(0,0,0,.06);
+    --preview:#7a5cc0; --preview-bg:#efe9fb;
   }
   *{box-sizing:border-box}
   body{
@@ -30,7 +31,7 @@
   .lead{color:#5c5547; max-width:70ch}
   table{border-collapse:collapse; width:100%; background:#fff; box-shadow:var(--shadow); border-radius:10px; overflow:hidden; margin:16px 0}
   caption{caption-side:top; text-align:left; font-weight:600; padding:0 0 8px; color:#6b6354}
-  th,td{border:1px solid var(--line); padding:9px 11px; text-align:left; font-size:.96rem; transition:background .25s, box-shadow .25s}
+  th,td{border:1px solid var(--line); padding:9px 11px; text-align:left; font-size:.96rem; transition:background .25s, box-shadow .25s, opacity .2s}
   thead th{background:#f1ebdd}
   tbody th{background:#f7f3ea; font-weight:600; white-space:nowrap}
   .da-cell{color:#9a927f; font-size:.82rem; display:block}
@@ -43,9 +44,37 @@
   .tag.m{background:var(--blue-bg); color:var(--blue)}
   .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:14px 0; box-shadow:var(--shadow)}
 
-  /* ---- highlight from builder ---- */
+  /* ---- highlight from builder (persistent yellow) ---- */
   .hl{ background:var(--hl) !important; box-shadow:inset 0 0 0 2px var(--hl-edge); position:relative; }
   .hl-row > th, .hl-row > td{ background:#fff7e0; }
+
+  /* ---- hover-preview layer (Hover-afsløring) ---- */
+  /* a temporary, distinctly-styled spotlight that differs from the persistent yellow .hl */
+  .pv{ background:var(--preview-bg) !important;
+       box-shadow:inset 0 0 0 2px var(--preview), 0 0 0 2px rgba(122,92,192,.25);
+       position:relative; z-index:2; }
+  .pv-row > th, .pv-row > td{ background:var(--preview-bg) !important; }
+  /* spotlight dim: tables fade slightly while previewing */
+  body.previewing table th, body.previewing table td{ opacity:.42; }
+  body.previewing table th.pv, body.previewing table td.pv,
+  body.previewing table .pv-row > th, body.previewing table .pv-row > td{ opacity:1; }
+
+  /* floating callout */
+  #pv-callout{
+    position:absolute; z-index:60; max-width:240px;
+    background:var(--preview); color:#fff;
+    font-size:.82rem; font-weight:600; line-height:1.35;
+    padding:8px 11px; border-radius:9px;
+    box-shadow:0 6px 20px rgba(0,0,0,.22);
+    pointer-events:none; opacity:0; transform:translateY(4px);
+    transition:opacity .14s ease, transform .14s ease;
+  }
+  #pv-callout.show{ opacity:1; transform:translateY(0); }
+  #pv-callout::after{
+    content:""; position:absolute; left:18px; top:-7px;
+    border:7px solid transparent; border-top:0;
+    border-bottom-color:var(--preview);
+  }
 
   /* ---- builder (now on top, sticky) ---- */
   .builder{
@@ -55,16 +84,21 @@
   }
   .row{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end}
   .field{display:flex; flex-direction:column; gap:4px; flex:1 1 160px; min-width:150px}
-  .field label{font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; color:#8a8170}
+  .field label{font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; color:#8a8170; cursor:help}
   .field label .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle}
+  /* subtle affordance that the menus are hoverable for an explanation */
+  .field.pv-active label{ color:var(--preview); }
   .dot-p{background:#7a5cc0} .dot-v{background:var(--green)} .dot-n{background:var(--blue)} .dot-a{background:var(--amber)}
   select{font-size:1rem; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:#faf7f0; width:100%}
+  .field.pv-active select{ border-color:var(--preview); box-shadow:0 0 0 2px rgba(122,92,192,.18); }
   .output{margin-top:18px; padding:16px 18px; background:var(--green-bg); border-radius:10px; border:1px solid #cfe3d6}
   .output .it{font-size:1.7rem; font-weight:700; color:var(--green)}
   .output .gloss{color:#5c5547; margin-top:4px}
   .output .note{color:#7a7263; font-size:.85rem; margin-top:8px}
   .pill{display:inline-block; padding:2px 8px; border-radius:6px; background:#fff; border:1px solid var(--line); margin:0 2px}
   .hint{color:#9a927f; font-size:.82rem; margin:6px 2px 0}
+  .combo-hint{color:var(--preview); font-size:.85rem; font-weight:600; margin:10px 2px 0;
+    background:var(--preview-bg); border:1px solid #d8cdf0; border-radius:8px; padding:7px 11px; display:inline-block}
 
   /* ---- FOCUSED SLICE STRIP (Prototype A) ---- */
   .slices{
@@ -89,9 +123,35 @@
   .mini-zoom{font-size:.74rem; color:#9a927f; margin-top:8px; display:flex; align-items:center; gap:5px}
   .strip-caption{color:#9a927f; font-size:.82rem; margin:14px 2px 4px}
 
+  /* ---- REVERSE-CLICK (Klik) ---- */
+  .clickable{ cursor:pointer; }
+  .clickable:hover{ background:#fbf3d8 !important; }
+  tr.clickable:hover > th, tr.clickable:hover > td{ background:#fbf3d8; }
+  /* while a dropdown preview is dimming the tables, suppress the click tint
+     on dimmed cells so the purple spotlight stays the dominant signal */
+  body.previewing .clickable:hover{ background:transparent !important; }
+  body.previewing tr.clickable:hover > th, body.previewing tr.clickable:hover > td{ background:inherit; }
+  @keyframes clickpulse{
+    0%{ box-shadow:inset 0 0 0 3px var(--hl-edge); background:#ffd866; }
+    100%{ box-shadow:inset 0 0 0 2px var(--hl-edge); }
+  }
+  .click-flash{ animation:clickpulse .55s ease-out; }
+  tr.click-flash > th, tr.click-flash > td{ animation:clickpulse .55s ease-out; }
+  .click-tip{
+    color:var(--amber); background:var(--amber-bg); border:1px solid #e3d2a4;
+    border-radius:8px; padding:8px 12px; font-size:.85rem; margin:14px 2px 4px; display:inline-block;
+  }
+
   .disclaimer{margin:24px 0 6px; background:#fdf6e3; border:1px solid #ecdca8; border-left:5px solid #e0b500;
     border-radius:10px; padding:14px 18px; color:#5c5128; font-size:.9rem; line-height:1.6}
   .disclaimer strong{color:#7a5a00}
+  .experiments{margin-top:48px; padding-top:18px; border-top:2px solid var(--line)}
+  .experiments h2{border:none; margin:0 0 2px; font-size:1.25rem}
+  .exp-links{display:flex; flex-wrap:wrap; gap:10px}
+  .exp-links a{display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:var(--ink);
+    background:#fff; border:1px solid var(--line); border-radius:20px; padding:7px 14px; font-size:.9rem; font-weight:600;
+    box-shadow:var(--shadow); transition:transform .12s, box-shadow .12s}
+  .exp-links a:hover{transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.1)}
   footer{margin-top:50px; color:#9a927f; font-size:.82rem; text-align:center}
   @media(max-width:640px){ header h1{font-size:1.5rem} .builder{position:static} .slice{flex:1 1 100%} }
 </style>
@@ -103,29 +163,29 @@
   <p style="margin:0 0 10px"><a href="../" style="color:#8a8170;text-decoration:none;font-size:.85rem">← Galleri</a></p>
   <span class="protobadge">🔍 Fokuseret udsnit</span>
   <h1>Italiensk 🇮🇹 – Sætningsbyggeren</h1>
-  <p>Byg en sætning foroven. Lige under får du et <em>fokuseret udsnit</em> af hver tabel – og længere nede ser du de fulde tabeller med de samme felter markeret med gult.</p>
+  <p>Byg en sætning foroven. Lige under får du et <em>fokuseret udsnit</em> af hver tabel – og længere nede ser du de fulde tabeller med de samme felter markeret med gult. <strong>Nyt i denne lab:</strong> hold musen over en menu for at se hvad den styrer – og klik direkte i tabellerne for at ændre sætningen.</p>
 </header>
 
 <!-- ============ SÆTNINGSBYGGER (TOP) ============ -->
 <div class="builder">
   <div class="row">
-    <div class="field">
+    <div class="field" id="field-subject">
       <label><span class="dot dot-p"></span>Person</label>
       <select id="subject"></select>
     </div>
-    <div class="field">
+    <div class="field" id="field-verb">
       <label><span class="dot dot-v"></span>Udsagnsord</label>
       <select id="verb"></select>
     </div>
-    <div class="field">
+    <div class="field" id="field-form">
       <label><span class="dot dot-n"></span>Form</label>
       <select id="form"></select>
     </div>
-    <div class="field">
+    <div class="field" id="field-noun">
       <label><span class="dot dot-n"></span>Navneord</label>
       <select id="noun"></select>
     </div>
-    <div class="field">
+    <div class="field" id="field-adj">
       <label><span class="dot dot-a"></span>Tillægsord</label>
       <select id="adj"></select>
     </div>
@@ -138,6 +198,9 @@
   </div>
   <p class="hint">↓ Fokuseret udsnit nedenfor – og fulde tabeller længere nede (markeret med gult).</p>
 </div>
+
+<!-- floating preview callout -->
+<div id="pv-callout"></div>
 
 <!-- ============ FOKUSERET UDSNIT (Prototype A) ============ -->
 <p class="strip-caption">🔍 Fokuseret udsnit – kun de relevante dele af tabellerne for dit valg:</p>
@@ -175,6 +238,8 @@
 
 </div>
 
+<p class="click-tip">💡 Klik på en celle i tabellerne for at ændre sætningen ovenfor.</p>
+
 <div class="disclaimer">
   <strong>⚠️ Bemærk – sætningerne giver ikke nødvendigvis mening!</strong>
   Formålet er ikke at lave rigtige udsagn, men at vise <strong>hvordan en italiensk sætning
@@ -184,15 +249,15 @@
 
 <!-- ============ TABEL 1: UDSAGNSORD ============ -->
 <h2>Udsagnsord <span class="da">(ita: i verbi) · bøjning i nutid (presente)</span></h2>
-<table>
+<table id="verb-table">
   <caption>Regelmæssig nutid · endelser og eksempler</caption>
   <thead>
     <tr>
       <th>Person</th>
       <th>Pronomen</th>
-      <th class="are">-are <span class="da">(parlare = tale)</span></th>
-      <th class="ere">-ere <span class="da">(prendere = tage)</span></th>
-      <th class="ire">-ire <span class="da">(dormire = sove)</span></th>
+      <th class="are" data-g="are">-are <span class="da">(parlare = tale)</span></th>
+      <th class="ere" data-g="ere">-ere <span class="da">(prendere = tage)</span></th>
+      <th class="ire" data-g="ire">-ire <span class="da">(dormire = sove)</span></th>
     </tr>
   </thead>
   <tbody>
@@ -230,9 +295,9 @@
   <thead>
     <tr>
       <th>Type</th>
-      <th>Ubestemt <span class="da">(en/et)</span></th>
-      <th>Bestemt ental <span class="da">(-en/-et)</span></th>
-      <th>Flertal <span class="da">(bestemt)</span></th>
+      <th data-col="0">Ubestemt <span class="da">(en/et)</span></th>
+      <th data-col="1">Bestemt ental <span class="da">(-en/-et)</span></th>
+      <th data-col="2">Flertal <span class="da">(bestemt)</span></th>
     </tr>
   </thead>
   <tbody>
@@ -267,7 +332,7 @@
 <h2>Navneord <span class="da">(ita: i nomi) · køn &amp; flertal</span></h2>
 <p class="lead">Hvert navneord har køn – <span class="tag m">hankøn</span> eller
 <span class="tag f">hunkøn</span> – som regel afsløret af endelsen:</p>
-<table>
+<table id="endelse-table">
   <caption>Endelse · typisk køn · flertal</caption>
   <thead>
     <tr><th>Endelse</th><th>Typisk køn</th><th>Ental (eksempel)</th><th>Flertal</th></tr>
@@ -305,6 +370,18 @@ Som regel står de <em>efter</em> navneordet: <span class="ex">una casa rossa</s
   </tbody>
 </table>
 <p class="da" style="margin:6px 2px 0">Bemærk: tillægsord på <strong>-e</strong> skelner kun mellem ental og flertal, ikke køn.</p>
+
+<section class="experiments">
+  <h2>🧪 Eksperimenter</h2>
+  <p class="da" style="margin:0 0 12px">Alternative måder at koble menuerne og tabellerne sammen – prøv dem af:</p>
+  <div class="exp-links">
+    <a href="../lab/">🧪 Lab-galleriet</a>
+    <a href="../lab/click/">🖱️ Reverse-klik</a>
+    <a href="../lab/color/">🎨 Farve-kobling</a>
+    <a href="../lab/hover/">👆 Hover-afsløring</a>
+    <a href="../lab/combo/">🖱️👆 Klik + Hover</a>
+  </div>
+</section>
 
 <footer>Lavet som læringshjælp · bøjningerne følger de to håndskrevne tabeller. Buono studio! 🇮🇹</footer>
 
@@ -428,6 +505,10 @@ function renderVerbSlice(s, v){
       `<th>${pronouns[p]}</th>` +
       `<td class="${isPicked?'mini-hl':''}">` +
       `<span class="end ${verbColor[v.g]}">-${endings[v.g][p]}</span> · <span class="ex">${conj}</span></td>`;
+    // clickable: choosing a row sets Person (the column already is the chosen verb's group)
+    const td = tr.querySelector("td");
+    td.classList.add("clickable");
+    td.addEventListener("click", ()=>{ setSel("subject", subjectIndexForPerson(p)); commit(); });
     body.appendChild(tr);
   }
 }
@@ -447,6 +528,11 @@ function renderNounSlice(n, form){
     `<th>${typeLabel}</th>` +
     td(0) + td(1) + td(2) +
     `</tr>`;
+  // clickable: choosing a column sets Form (the noun itself is already chosen)
+  body.querySelectorAll("td").forEach((cellEl, col)=>{
+    cellEl.classList.add("clickable");
+    cellEl.addEventListener("click", ()=>{ setSel("form", formIndexForCol(col)); commit(); });
+  });
 }
 
 function renderAdjSlice(a, n, plural){
@@ -468,6 +554,17 @@ function renderAdjSlice(a, n, plural){
   const usedKey = `${n.g}-${plural?"pl":"sg"}`;
   const cell = (k)=> `<td class="${k===usedKey?'mini-hl':''}">${cells[k]}</td>`;
   body.innerHTML = `<tr>${cell("m-sg")}${cell("f-sg")}${cell("m-pl")}${cell("f-pl")}</tr>`;
+  // clickable: gender follows the chosen noun, so a column only switches ental/flertal (Form)
+  const keys = ["m-sg","f-sg","m-pl","f-pl"];
+  body.querySelectorAll("td").forEach((cellEl, i)=>{
+    const isPlural = keys[i].endsWith("pl");
+    cellEl.classList.add("clickable");
+    cellEl.addEventListener("click", ()=>{
+      if(isPlural){ if(!forms[$("form").value].plural) setSel("form", formIndexForCol(2)); }
+      else { if(forms[$("form").value].plural) setSel("form", formIndexForCol(1)); }
+      commit();
+    });
+  });
 }
 
 function render(){
@@ -517,6 +614,265 @@ function render(){
 
 ["subject","verb","form","noun","adj"].forEach(id=> $(id).addEventListener("change", render));
 render();
+
+/* ====================================================================
+   REVERSE-CLICK (two-way binding) — Klik feature
+   Clicking a reference cell/row updates the matching dropdown(s) and
+   rebuilds the sentence. Inverse of the dropdown→table highlighting.
+   ==================================================================== */
+
+/* set a <select> by value (index into its data array) */
+function setSel(id, idx){ $(id).value = String(idx); }
+
+/* pick first subject index whose person === p */
+function subjectIndexForPerson(p){
+  const i = subjects.findIndex(s=>s.p===p);
+  return i<0 ? 0 : i;
+}
+/* pick first verb index of a given group (are/ere/ire) */
+function verbIndexForGroup(g){
+  const i = verbs.findIndex(v=>v.g===g);
+  return i<0 ? 0 : i;
+}
+/* pick first noun matching gender+type; fallback to gender; fallback first */
+function nounIndexForRow(g, t){
+  let i = nouns.findIndex(n=>n.g===g && n.row===t);
+  if(i<0) i = nouns.findIndex(n=>n.g===g);
+  return i<0 ? 0 : i;
+}
+/* pick first noun whose singular ends in a given letter */
+function nounIndexForEnding(letter){
+  const i = nouns.findIndex(n=>n.sg.slice(-1)===letter);
+  return i<0 ? 0 : i;
+}
+/* pick first adj index of a given type (o/e) */
+function adjIndexForType(type){
+  const i = adjs.findIndex(a=>a.type===type);
+  return i<0 ? 1 : i;
+}
+/* form index from a noun-table column (0/1/2) */
+function formIndexForCol(col){
+  const i = forms.findIndex(f=>f.col===col);
+  return i<0 ? 0 : i;
+}
+
+/* brief pulse on the clicked element */
+function flash(el){
+  if(!el) return;
+  el.classList.remove("click-flash");
+  // force reflow so the animation can re-trigger on rapid repeat clicks
+  void el.offsetWidth;
+  el.classList.add("click-flash");
+  el.addEventListener("animationend", ()=>el.classList.remove("click-flash"), {once:true});
+}
+
+/* a click should always commit the change cleanly, even if a dropdown-hover
+   preview happened to be active — drop the preview, then render(). */
+function commit(){
+  clearPreview();
+  render();
+}
+
+/* ----- VERB table: cells v-{p}-{g} ----- */
+document.querySelectorAll('[id^="v-"]').forEach(cell=>{
+  const m = cell.id.match(/^v-(\d)-(are|ere|ire)$/);
+  if(!m) return;
+  const p = parseInt(m[1],10), g = m[2];
+  cell.classList.add("clickable");
+  cell.addEventListener("click", ()=>{
+    setSel("subject", subjectIndexForPerson(p));
+    // keep current verb if it's already in this group; otherwise switch
+    if(verbs[$("verb").value].g !== g) setSel("verb", verbIndexForGroup(g));
+    commit();
+    flash(cell);
+  });
+});
+
+/* ----- NOUN+article table: clickable rows; column → form ----- */
+document.querySelectorAll('#noun-table tbody tr').forEach(row=>{
+  const g = row.getAttribute("data-g");
+  const t = row.getAttribute("data-t");
+  if(!g || !t) return;
+  // special2 row has no matching noun → fall back to special / gender
+  const tForLookup = (t==="special2") ? "special" : t;
+  row.classList.add("clickable");
+  const tds = row.querySelectorAll("td");
+  tds.forEach((td, col)=>{
+    td.addEventListener("click", ()=>{
+      setSel("noun", nounIndexForRow(g, tForLookup));
+      setSel("form", formIndexForCol(col));
+      commit();
+      flash(td);
+    });
+  });
+});
+
+/* ----- ADJECTIVE table: cells a-{type}-{g}-{sg|pl} ----- */
+document.querySelectorAll('[id^="a-"]').forEach(cell=>{
+  const m = cell.id.match(/^a-(o|e)-(m|f)-(sg|pl)$/);
+  if(!m) return;
+  const type = m[1], plural = (m[3]==="pl");
+  cell.classList.add("clickable");
+  cell.addEventListener("click", ()=>{
+    setSel("adj", adjIndexForType(type));
+    // map to a form with the matching number; keep singular kind if already chosen
+    if(plural){
+      if(!forms[$("form").value].plural) setSel("form", formIndexForCol(2));
+    } else {
+      if(forms[$("form").value].plural) setSel("form", formIndexForCol(1)); // default to bestemt ental
+    }
+    commit();
+    flash(cell);
+  });
+});
+
+/* ----- ENDELSE table: rows nend-o / nend-a / nend-e ----- */
+["o","a","e"].forEach(letter=>{
+  const row = $("nend-"+letter);
+  if(!row) return;
+  row.classList.add("clickable");
+  row.addEventListener("click", ()=>{
+    setSel("noun", nounIndexForEnding(letter));
+    commit();
+    flash(row);
+  });
+});
+
+/* =====================================================================
+   HOVER-TO-REVEAL LAYER — Hover-afsløring feature
+   Spotlights the exact table region each dropdown controls.
+   Uses a temporary ".pv" / ".pv-row" preview style (purple glow)
+   that is visually distinct from the persistent yellow ".hl".
+   On leave/blur it is fully cleared (and render() re-applied) so the
+   normal persistent state is restored.
+   ===================================================================== */
+const callout = $("pv-callout");
+
+function clearPreview(){
+  const wasPreviewing = document.body.classList.contains("previewing");
+  document.querySelectorAll(".pv").forEach(e=>e.classList.remove("pv"));
+  document.querySelectorAll(".pv-row").forEach(e=>e.classList.remove("pv-row"));
+  document.querySelectorAll(".field.pv-active").forEach(e=>e.classList.remove("pv-active"));
+  document.body.classList.remove("previewing");
+  callout.classList.remove("show");
+  // re-assert the persistent yellow highlights / slices after a preview
+  if(wasPreviewing) render();
+}
+
+/* place the callout just below the first previewed element */
+function showCallout(text, targetEl){
+  if(!targetEl){ callout.classList.remove("show"); return; }
+  callout.textContent = text;
+  // measure after content set
+  const r = targetEl.getBoundingClientRect();
+  const scrollX = window.scrollX || window.pageXOffset;
+  const scrollY = window.scrollY || window.pageYOffset;
+  // show first so width is measurable
+  callout.classList.add("show");
+  const cw = callout.offsetWidth;
+  let left = r.left + scrollX;
+  // keep within viewport
+  const maxLeft = scrollX + document.documentElement.clientWidth - cw - 12;
+  if(left > maxLeft) left = maxLeft;
+  if(left < scrollX + 8) left = scrollX + 8;
+  const top = r.bottom + scrollY + 10;
+  callout.style.left = left + "px";
+  callout.style.top  = top + "px";
+}
+
+/* collect the elements each dropdown controls, based on CURRENT selection */
+function previewTargets(which){
+  const s = subjects[$("subject").value];
+  const v = verbs[$("verb").value];
+  const n = nouns[$("noun").value];
+  const a = adjs[$("adj").value];
+  const form = forms[$("form").value];
+
+  const out = {cells:[], rows:[], label:"", anchor:null};
+
+  if(which==="subject"){
+    // the verb-table ROW for the selected person (all 3 groups)
+    const row = ["are","ere","ire"].map(g=>$(`v-${s.p}-${g}`)).filter(Boolean);
+    out.cells = row;
+    out.label = "Person vælger rækken i udsagnsord-tabellen";
+    out.anchor = row[0];
+  }
+  else if(which==="verb"){
+    // the verb GROUP column (header + 6 person cells) for the chosen group
+    const g = v.g;
+    const header = document.querySelector(`#verb-table thead th[data-g="${g}"]`);
+    const col = [];
+    if(header) col.push(header);
+    for(let p=0;p<6;p++){ const c=$(`v-${p}-${g}`); if(c) col.push(c); }
+    out.cells = col;
+    out.label = "Udsagnsordet bestemmer endelses-gruppen (-are/-ere/-ire)";
+    out.anchor = header || col[0];
+  }
+  else if(which==="form"){
+    // the active COLUMN across the noun/article table
+    const col = form.col;
+    const header = document.querySelector(`#noun-table thead th[data-col="${col}"]`);
+    const cells = [];
+    if(header) cells.push(header);
+    document.querySelectorAll(`#noun-table tbody tr`).forEach(tr=>{
+      const c = tr.querySelectorAll("td")[col];
+      if(c) cells.push(c);
+    });
+    out.cells = cells;
+    out.label = "Form vælger kolonnen: ubestemt / bestemt / flertal";
+    out.anchor = header || cells[0];
+  }
+  else if(which==="noun"){
+    // matching #noun-table row + matching Endelse row
+    const nr = document.querySelector(`#noun-table tr[data-g="${n.g}"][data-t="${n.row}"]`);
+    if(nr) out.rows.push(nr);
+    const endRow = $(`nend-${n.sg.slice(-1)}`);
+    if(endRow) out.rows.push(endRow);
+    out.label = "Navneordet vælger rækken (køn + endelse)";
+    out.anchor = nr || endRow;
+  }
+  else if(which==="adj"){
+    out.label = "Tillægsordet bøjes efter køn og tal";
+    if(a.type==="none"){
+      // nothing specific selected: spotlight whole adj table body row(s)
+      const rows = document.querySelectorAll("#adj-table tbody tr");
+      rows.forEach(r=>out.rows.push(r));
+      out.anchor = rows[0];
+    } else {
+      const plural = form.plural;
+      const cell = $(`a-${a.type}-${n.g}-${plural?"pl":"sg"}`);
+      if(cell) out.cells.push(cell);
+      out.anchor = cell;
+    }
+  }
+  return out;
+}
+
+function runPreview(which){
+  clearPreview();
+  const t = previewTargets(which);
+  document.body.classList.add("previewing");
+  t.cells.forEach(c=>c.classList.add("pv"));
+  t.rows.forEach(r=>r.classList.add("pv-row"));
+  const field = $("field-"+which);
+  if(field) field.classList.add("pv-active");
+  showCallout(t.label, t.anchor);
+}
+
+/* wire up each field: hovering/focusing the select OR its label triggers preview */
+["subject","verb","form","noun","adj"].forEach(id=>{
+  const field = $("field-"+id);
+  const sel = $(id);
+  const enter = ()=> runPreview(id);
+  // pointer hover over the whole field (covers label + select)
+  field.addEventListener("mouseenter", enter);
+  field.addEventListener("mouseleave", clearPreview);
+  // keyboard focus on the select
+  sel.addEventListener("focus", enter);
+  sel.addEventListener("blur", clearPreview);
+});
+// safety: if the user scrolls or changes selection, drop the preview cleanly
+window.addEventListener("scroll", ()=>{ if(document.body.classList.contains("previewing")) clearPreview(); }, {passive:true});
 </script>
 </body>
 </html>
